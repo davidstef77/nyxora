@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0b0b0d;
+  --panel: #0f1113;
+  --muted: #17181a;
+  --purple-600: #7c3aed;
+  --purple-700: #5b21b6;
+  --accent: #a78bfa;
+  --text: #e6e6ea;
+  --muted-text: #9aa0a6;
+}
+
+
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+a {
+  color: var(--purple-600);
+  text-decoration: none;
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(124,58,237,0.08);
+  box-shadow: 0 6px 30px rgba(10,6,20,0.6);
+  border-radius: 12px;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--purple-600), var(--accent));
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 6px 24px rgba(124,58,237,0.12);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.18);
+}
+
+/* Ensure gradient text utilities work across browsers (used in Hero) */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent; /* Safari/Chrome */
+}
+
+/* Fallback for elements that rely on Tailwind's text-transparent/bg-clip-text
+   in case utilities aren't applied as expected during build/runtime. */
+.gradient-text-fallback {
+  /* Provide a visible fallback when background-clip or gradients aren't applied.
+     This unsets the webkit text fill transparency so the element's color will show. */
+  -webkit-text-fill-color: initial;
+  color: var(--text);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Force opaque navbar when desired (prevents translucent/faded header) */
+.navbar-solid {
+  background: var(--panel) !important;
+  border: 1px solid rgba(124,58,237,0.12) !important;
+  box-shadow: 0 8px 40px rgba(2,6,23,0.7) !important;
+  backdrop-filter: none !important;
+}
+
+/* Heading shimmer effect (subtle, respects reduced motion) */
+.heading-shimmer {
+  position: relative;
+  overflow: visible;
+}
+.heading-shimmer::after {
+  content: '';
+  position: absolute;
+  left: -60%;
+  top: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.18), rgba(255,255,255,0.02));
+  transform: skewX(-20deg);
+  filter: blur(12px);
+  opacity: 0.6;
+  animation: shimmer 2.4s linear infinite;
+}
+@keyframes shimmer {
+  0% { left: -60%; }
+  100% { left: 160%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heading-shimmer::after { animation: none; opacity: 0; }
+}
