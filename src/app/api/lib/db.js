@@ -28,13 +28,30 @@ async function connect() {
       // Add any other mongoose options you need here
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseIns) => {
-      return mongooseIns;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongooseIns) => mongooseIns)
+      .catch((err) => {
+        // Reset the promise so subsequent calls can retry
+        cached.promise = null;
+        // Provide a clearer error message for common Atlas/network issues
+        const help = `Failed to connect to MongoDB. Check your network/Atlas IP access list and that the MONGODB_URI is correct. See: https://www.mongodb.com/docs/atlas/security-whitelist/`;
+        // Attach original error as cause if available, but avoid leaking credentials
+        const wrapped = new Error(`${help} Original error: ${err && err.message ? err.message : String(err)}`);
+        // preserve stack for debugging
+        wrapped.stack = err && err.stack ? `${wrapped.stack}\nCaused by: ${err.stack}` : wrapped.stack;
+        throw wrapped;
+      });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (err) {
+    // If connection failed, clear cached.conn so future attempts can retry
+    cached.conn = null;
+    // Re-throw the error (already wrapped above)
+    throw err;
+  }
 }
 
 export default connect;

@@ -12,7 +12,8 @@ function sanitizeKey(v) {
 
 export async function GET(request, { params }) {
   await connect();
-  const cat = await Category.findOne({ slug: params.slug }).lean();
+  const p = await params;
+  const cat = await Category.findOne({ slug: p.slug }).lean();
   if (!cat) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
   return new Response(JSON.stringify(cat), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }
@@ -26,7 +27,8 @@ export async function PUT(request, { params }) {
   try {
     await connect();
     const data = await request.json();
-    const updated = await Category.findOneAndUpdate({ slug: params.slug }, data, { new: true }).lean();
+  const p = await params;
+  const updated = await Category.findOneAndUpdate({ slug: p.slug }, data, { new: true }).lean();
     if (!updated) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {
@@ -45,7 +47,8 @@ export async function DELETE(request, { params }) {
 
   try {
     await connect();
-    const res = await Category.findOneAndDelete({ slug: params.slug });
+  const p = await params;
+  const res = await Category.findOneAndDelete({ slug: p.slug });
     if (!res) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err) {

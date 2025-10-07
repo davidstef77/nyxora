@@ -9,6 +9,23 @@
   --accent: #a78bfa;
   --text: #e6e6ea;
   --muted-text: #9aa0a6;
+  /* Layout / typography tokens */
+  --max-content-width: 1200px;
+  --content-side-padding: 1rem; /* mobile */
+  --heading-scale-1: 2.25rem; /* 36px */
+  --heading-scale-2: 1.75rem; /* 28px */
+  --heading-scale-3: 1.25rem; /* 20px */
+}
+
+/* navbar offset: space to reserve at top of pages for the fixed navbar */
+:root {
+  --navbar-offset: 4rem; /* mobile: ~64px */
+}
+
+@media (min-width: 640px) {
+  :root {
+    --navbar-offset: 5rem; /* desktop: ~80px */
+  }
 }
 
 
@@ -18,6 +35,227 @@ html, body {
   color: var(--text);
   font-family: system-ui, -apple-system, sans-serif;
 }
+
+/* Global container to center page content while allowing full-bleed elements */
+.container {
+  max-width: var(--max-content-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--content-side-padding);
+  padding-right: var(--content-side-padding);
+}
+
+/* Basic responsive heading sizes for consistent pages */
+h1 {
+  font-size: var(--heading-scale-1);
+  line-height: 1.05;
+  font-weight: 700;
+  margin: 0 0 0.6rem 0;
+}
+
+h2 {
+  font-size: var(--heading-scale-2);
+  line-height: 1.1;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+h3 {
+  font-size: var(--heading-scale-3);
+  line-height: 1.2;
+  font-weight: 600;
+  margin: 0 0 0.4rem 0;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --content-side-padding: 2rem;
+    --heading-scale-1: 3rem; /* 48px */
+    --heading-scale-2: 2.25rem; /* 36px */
+    --heading-scale-3: 1.125rem; /* 18px */
+  }
+}
+
+/* Accessibility helpers */
+.sr-only {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap; /* added line */
+}
+
+/* Focus styles for keyboard users */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.18);
+  border-radius: 8px;
+}
+
+/* Images should be responsive by default */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Helper for full-bleed headers that still center inner content */
+.full-bleed-header {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 639px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Extra small breakpoint for very small screens */
+@media (min-width: 475px) {
+  /* Custom xs breakpoint styles can go here */
+}
+
+/* Touch-friendly interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px; /* iOS accessibility guideline */
+    min-width: 44px;
+  }
+  
+  /* Larger tap targets on mobile */
+  .btn-primary {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+/* Enhanced focus styles for mobile */
+@media (max-width: 767px) {
+  :focus-visible {
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.3);
+    border-radius: 12px;
+  }
+}
+
+/* Smooth transitions for better mobile feel */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, [role="button"] {
+  transition: transform 0.1s ease-out, background-color 0.2s ease-out;
+}
+
+button:active, a:active, [role="button"]:active {
+  transform: scale(0.96);
+}
+
+/* Mobile-optimized text sizes */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.875rem; /* 30px */
+    line-height: 1.1;
+  }
+  
+  h2 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 1.2;
+  }
+  
+  h3 {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.3;
+  }
+}
+
+/* Grid improvements for mobile */
+.mobile-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .mobile-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .mobile-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Mobile bottom navigation space */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Improved mobile card hover states */
+@media (hover: none) and (pointer: coarse) {
+  .group:active .group-hover\:scale-110 {
+    transform: scale(1.05);
+  }
+  
+  .group:active .group-hover\:opacity-60 {
+    opacity: 0.4;
+  }
+}
+
+/* Mobile-specific animations */
+@media (max-width: 767px) {
+  .animate-slide-up {
+    animation: slideUpMobile 0.3s ease-out;
+  }
+  
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+/* Enhanced scrollbar for mobile webkit */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.5);
+}
+
 
 a {
   color: var(--purple-600);

@@ -12,68 +12,46 @@ async function getData() {
 
 export default async function CategoryPage({ params }) {
   try {
-    const { categories, manufacturers, featuredProducts } = await getData();
-    const category = categories.find((c) => c.slug === params.slug);
+  const { categories, featuredProducts } = await getData();
+    const p = await params;
+    const category = categories.find((c) => c.slug === p.slug);
 
     if (!category) {
       return (
-        <div className="container mx-auto p-8">
+    <div className="container p-8">
           <h1 className="text-2xl font-semibold">Categorie negăsită</h1>
           <Link href="/" className="text-cyan-400 mt-4 block">Înapoi la listă</Link>
         </div>
       );
     }
 
-    // filter manufacturers that belong to this category (by slug)
-    const brands = manufacturers.filter((m) => m.category === category.slug);
-
     return (
-      <main className="container mx-auto p-8">
-        <div className="flex items-center gap-6 mb-6">
-          <div className="w-20 h-20 bg-slate-800/50 rounded-lg overflow-hidden flex items-center justify-center">
-            <Image src={category.icon} alt={category.name} width={80} height={80} style={{ objectFit: 'contain' }} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">{category.name}</h1>
-            <p className="text-slate-300">{category.description}</p>
+      <>
+        {/* Full-bleed header: placed outside the centered container so it spans the viewport */}
+        <div className="relative w-full h-80 mb-8 overflow-hidden full-bleed-header">
+          <Image src={category.icon || '/placeholder-product.svg'} alt={category.name} fill style={{ objectFit: 'cover' }} />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute left-6 bottom-6">
+            <h1 className="font-bold text-white drop-shadow-lg heading-shimmer">{category.name}</h1>
+            {category.description && <p className="text-slate-200 mt-3 max-w-2xl text-lg">{category.description}</p>}
           </div>
         </div>
 
-        {/* Manufacturers (brands) shown first */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Firme producătoare</h2>
-          {brands.length === 0 ? (
-            <p className="text-slate-400">Nu există firme înregistrate pentru această categorie.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {brands.map((b) => (
-                <Link key={b.slug} href={`/manufacturers/${b.slug}`} className="rounded-lg bg-slate-800/50 p-4 flex flex-col items-center text-center hover:shadow-lg">
-                  <div className="w-20 h-20 mb-3 overflow-hidden rounded-md">
-                    <Image src={b.logo} alt={b.name} width={80} height={80} style={{ objectFit: 'contain' }} />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-100">{b.name}</div>
-                    {b.description && <div className="text-sm text-slate-300 mt-1">{b.description}</div>}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+        <main className="container p-0">
+          {/* Content stays centered inside the container */}
+          <section className="container">
+            <ProductsForCategory categorySlug={category.slug} />
+          </section>
 
-        {/* Products are revealed after user intent (button) */}
-        <section>
-          <ProductsForCategory categorySlug={category.slug} />
-        </section>
-
-        <div className="mt-6">
-          <Link href="/" className="text-cyan-400">Înapoi</Link>
-        </div>
-      </main>
+          <div className="mt-6">
+            <Link href="/" className="text-cyan-400">Înapoi</Link>
+          </div>
+        </main>
+      </>
     );
   } catch (err) {
     return (
-      <div className="container mx-auto p-8">
+  <div className="container p-8">
         <h1 className="text-2xl font-semibold">Eroare la încărcare</h1>
         <p className="text-slate-300">{String(err)}</p>
       </div>
@@ -108,7 +86,7 @@ function ProductsForCategoryPlaceholder({ categorySlug }) {
     <div>
       {!show ? (
         <div className="panel p-6">
-          <p className="text-slate-300 mb-4">Vezi produsele din această categorie — mai întâi vezi firmele producătoare.</p>
+          <p className="text-slate-300 mb-4">Vezi produsele din această categorie.</p>
           <button onClick={loadProducts} className="btn-primary">Arată Produse</button>
         </div>
       ) : (
@@ -123,7 +101,7 @@ function ProductsForCategoryPlaceholder({ categorySlug }) {
                   </div>
                   <div className="p-4">
                     <h3 className="font-medium text-slate-100">{p.name}</h3>
-                    <p className="text-sm text-slate-300 mt-1">{p.price}</p>
+                    <p className="text-sm text-slate-300 mt-1">{p.displayPrice || 'Preț nedefinit'}</p>
                   </div>
                 </Link>
               ))}

@@ -1,7 +1,6 @@
 import connect from '../lib/db';
 import Product from '../lib/models/Product';
 import Category from '../lib/models/Category';
-import Manufacturer from '../lib/models/Manufacturer';
 
 export async function GET() {
   try {
@@ -9,10 +8,7 @@ export async function GET() {
     const categories = await Category.find().lean();
     // featuredProducts: return latest 8 products as sample
     const featuredProducts = await Product.find().sort({ createdAt: -1 }).limit(8).lean();
-    // include manufacturers so the frontend can show brands per category
-    const manufacturers = await Manufacturer.find().lean();
-
-    return new Response(JSON.stringify({ categories, featuredProducts, manufacturers }), {
+    return new Response(JSON.stringify({ categories, featuredProducts }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
