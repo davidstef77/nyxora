@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from 'next/image';
+import logoSrc from './images/N.png';
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from "framer-motion";
 import { useSession, signOut } from 'next-auth/react';
+
+const SITE_TAGLINE = 'PC Components, Laptops, Phones';
 
 export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
@@ -53,12 +57,31 @@ export default function Navbar() {
           <div className="container flex items-center justify-between px-3 sm:px-0 py-2 sm:py-3">
             {/* Logo */}
             <Link href="/" className="inline-flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-white font-extrabold text-base sm:text-lg shadow-md">N</div>
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-white font-extrabold text-base sm:text-lg shadow-md overflow-hidden">
+                <Image src={logoSrc} alt="Nyxora" width={56} height={56} className="object-cover" />
+              </div>
               <div className="hidden xs:flex sm:flex flex-col leading-none min-w-0">
                 <span className="font-semibold text-white text-base sm:text-lg truncate">Nyxora</span>
-                <span className="text-xs text-white/80">PC components</span>
+                <span suppressHydrationWarning className="text-xs text-white/80">{SITE_TAGLINE}</span>
               </div>
             </Link>
+
+            {/* Primary nav links (visible on md+) */}
+            <nav className="hidden sm:flex items-center gap-4 ml-6">
+              <Link href="/products" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Produse</Link>
+              <Link href="/categories" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Categorii</Link>
+              <Link href="/blog" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Blog</Link>
+              <Link href="/tops" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Topuri</Link>
+            </nav>
+
+            {/* Mobile menu toggle (visible on small screens) */}
+            <div className="sm:hidden ml-3">
+              <button onClick={() => setShowMobileMenu(!showMobileMenu)} aria-label="Open menu" className="inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20" style={{ color: '#fff' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
 
             {/* Search + icons */}
             <div className="flex items-center gap-2 sm:gap-3">
@@ -80,14 +103,14 @@ export default function Navbar() {
                   <button type="button" onClick={() => { setShowSearch(false); setSearchQ(''); }} className="text-white/80 p-1 hover:bg-white/10 rounded-full transition-colors text-sm" aria-label="Close search">✕</button>
                 </form>
               ) : (
-                <button onClick={() => setShowSearch(true)} className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Deschide căutare">
+                <button onClick={() => setShowSearch(true)} className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Deschide căutare" style={{ color: '#fff' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <path stroke="currentColor" strokeWidth="1.8" d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z"/>
                   </svg>
                 </button>
               )}
 
-              <Link href="/favorites" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Favorite">
+              <Link href="/favorites" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Favorite" style={{ color: '#fff' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M12 21s-6.716-4.686-9.3-7.028C-0.302 11.357 1.08 6.5 5.4 5.07 7.74 4.21 9.59 5.03 12 7.01c2.41-1.98 4.26-2.8 6.6-1.94 4.32 1.43 5.7 6.29 2.7 8.902C18.716 16.314 12 21 12 21z" stroke="currentColor" strokeWidth="0" fill="currentColor" />
                 </svg>
@@ -99,13 +122,13 @@ export default function Navbar() {
               {mounted ? (
                 isAdminPath ? (
                   status === 'authenticated' && session ? (
-                    <Link href="/admin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Admin">
+                    <Link href="/admin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Admin" style={{ color: '#fff' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z" fill="currentColor" />
                       </svg>
                     </Link>
                   ) : (
-                    <Link href="/admin/login" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Admin login">
+                    <Link href="/admin/login" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Admin login" style={{ color: '#fff' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M10 17l5-5-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -114,7 +137,7 @@ export default function Navbar() {
                   )
                 ) : (
                   status === 'authenticated' && session ? (
-                    <Link href="/profile" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Profil">
+                    <Link href="/profile" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Profil" style={{ color: '#fff' }}>
                       {session.user?.image ? (
                         <img src={session.user.image} alt={session.user?.name || 'Avatar'} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
                       ) : (
@@ -124,7 +147,7 @@ export default function Navbar() {
                       )}
                     </Link>
                   ) : (
-                    <Link href="/auth/signin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Sign in">
+                    <Link href="/auth/signin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Sign in" style={{ color: '#fff' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M10 17l5-5-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -136,7 +159,7 @@ export default function Navbar() {
                 // Fallback shown during SSR / before hydration completes.
                 // Keep the markup identical to the unauthenticated state so the
                 // server-rendered HTML matches the client's initial render.
-                <Link href="/auth/signin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Sign in">
+                <Link href="/auth/signin" className="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95" aria-label="Sign in" style={{ color: '#fff' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M10 17l5-5-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -146,6 +169,17 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+        {/* Mobile dropdown menu */}
+        {showMobileMenu && (
+          <div className="fixed left-2 right-2 top-20 z-40 sm:hidden bg-[rgba(17,24,39,0.85)] rounded-2xl shadow-lg p-3 backdrop-blur-md">
+          <nav className="flex flex-col gap-2">
+            <Link href="/products" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Produse</Link>
+            <Link href="/categories" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Categorii</Link>
+            <Link href="/blog" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Blog</Link>
+            <Link href="/tops" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Topuri</Link>
+          </nav>
+          </div>
+        )}
       </motion.header>
     </>
   );

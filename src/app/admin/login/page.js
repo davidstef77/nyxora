@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
@@ -37,7 +38,7 @@ export default function AdminLogin() {
           {error && <div className="text-red-400">{error}</div>}
           <div className="flex gap-3">
             <button type="submit" disabled={loading} className="bg-cyan-500 px-4 py-2 rounded text-white">Autentifică-te</button>
-            <a href="/" className="text-slate-300 px-4 py-2 rounded border border-slate-600">Înapoi</a>
+            <Link href="/" className="text-slate-300 px-4 py-2 rounded border border-slate-600">Înapoi</Link>
           </div>
         </form>
       </div>

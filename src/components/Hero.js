@@ -7,8 +7,8 @@ import { motion } from 'framer-motion'
 import './Hero.css'
 
 export default function Hero({
-  title = 'Construiește-ți PC-ul visat',
-  subtitle = 'Componente premium, prețuri actualizate în timp real și ghiduri de specialitate.',
+  title = 'Găsește laptopuri, telefoane și componente — topuri, recenzii și oferte',
+  subtitle = 'Recenzii aprofundate, topuri, benchmark-uri și linkuri afiliate pentru laptopuri, telefoane și componente PC. Alege inteligent și găsește cea mai bună ofertă.',
   primaryCta = { label: 'Vezi Produse', href: '/products' },
   secondaryCta = { label: 'Planificator Build', href: '/build' },
 }) {
@@ -59,8 +59,8 @@ export default function Hero({
                 name="q"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Caută CPU, GPU, SSD..."
-                aria-label="Caută componente"
+                placeholder="Caută laptop, telefon, CPU, GPU, SSD..."
+                aria-label="Caută laptop, telefon sau componente"
                 className="hero-search-input"
               />
               <button type="submit" className="hero-search-button" aria-label="Search">

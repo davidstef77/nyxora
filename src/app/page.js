@@ -2,7 +2,6 @@ import Image from '../components/SmartImage';
 import FavoriteButton from '../components/FavoriteButton';
 import Link from 'next/link';
 import Hero from '../components/Hero';
-import Navbar from '../components/Navbar';
 import connect from './api/lib/db';
 import Product from './api/lib/models/Product';
 import Category from './api/lib/models/Category';
@@ -18,7 +17,6 @@ async function getData() {
   try {
     const categories = await Category.find().lean();
     const featuredProducts = await Product.find().sort({ createdAt: -1 }).limit(8).lean();
-    // displayPrice is no longer derived from manufacturers; leave products as-is
     return { categories, featuredProducts };
   } catch (err) {
     console.error('[page] getData error fetching data', err);
@@ -42,9 +40,9 @@ export default async function Home() {
         </div>
       )}
 
-  <Hero imageSrc="/next.svg" imageAlt="Configurare PC high-end cu GPU și procesor" />
+      <Hero imageSrc="/next.svg" imageAlt="Găsește laptopuri, telefoane și componente" />
 
-  <main className="container px-4 sm:px-6 py-8 sm:py-16">
+      <main className="container px-4 sm:px-6 py-8 sm:py-16">
         <section id="categories" className="mobile-grid mb-8 sm:mb-12">
           {categories.map((c) => (
             <Link key={c.slug} href={`/categories/${c.slug}`} className="rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-6 sm:p-8 hover:scale-[1.02] transform transition-all duration-300 shadow-lg hover:shadow-xl active:scale-[0.98] block border border-white/5">
@@ -57,7 +55,9 @@ export default async function Home() {
         </section>
 
         <section id="products" className="mb-8 sm:mb-16">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-slate-100">Produse Recomandate</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-slate-100">Produse Recomandate — laptopuri, telefoane și componente</h2>
+          <p className="text-slate-400 mb-4">Vezi topuri, recenzii și oferte pentru laptopuri, telefoane, procesoare, plăci video, SSD-uri și alte componente.</p>
+
           <div className="mobile-grid">
             {featuredProducts.length === 0 && (
               <p className="text-slate-400 col-span-full text-center py-8">Momentan nu există produse recomandate.</p>
@@ -92,15 +92,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t py-8" style={{ borderColor: 'rgba(124,58,237,0.08)' }}>
-  <div className="container px-6 text-center" style={{ color: 'var(--muted-text)' }}>
-          <p>© {new Date().getFullYear()} Nyxora.ro — Toate drepturile rezervate</p>
-          <div className="mt-3 space-x-4">
-            <Link href="#" className="hover:text-[var(--accent)] transition-colors">Termeni & Condiții</Link>
-            <Link href="#" className="hover:text-[var(--accent)] transition-colors">Politica de Confidențialitate</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Footer legal text removed per request */}
     </div>
   );
 }

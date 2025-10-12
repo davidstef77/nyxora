@@ -13,11 +13,13 @@ const Footer = () => {
         <div className="footer-links">
           <h3>Link-uri rapide</h3>
           <ul>
-            <li><Link href="/">Acasă</Link></li>
-            <li><Link href="/products">Produse</Link></li>
-            <li><Link href="/categories">Categorii</Link></li>
-            <li><Link href="/favorites">Favorite</Link></li>
-            <li><Link href="/admin">Admin</Link></li>
+                <li><Link href="/blog" className="text-white" style={{ color: '#fff' }}>Blog</Link></li>
+                <li><Link href="/tops" className="text-white" style={{ color: '#fff' }}>Topuri</Link></li>
+            <li><Link href="/blog" className="text-white">Blog</Link></li>
+            <li><Link href="/tops" className="text-white">Topuri</Link></li>
+            <li><Link href="/categories" className="text-white">Categorii</Link></li>
+            <li><Link href="/favorites" className="text-white">Favorite</Link></li>
+           
           </ul>
         </div>
         <div className="footer-social">
@@ -30,9 +32,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Nyxora. Toate drepturile rezervate.</p>
-      </div>
+      {/* Copyright and legal links removed per request */}
     </footer>
   );
 };

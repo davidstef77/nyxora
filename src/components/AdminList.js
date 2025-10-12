@@ -8,6 +8,7 @@ import './admin.css';
 // Item card component for better visual presentation
 function ItemCard({ item, section, onView, onEdit, onDelete }) {
   const isProduct = section === 'products';
+  const displayName = item.name || item.title || item.slug || '(untitled)';
   
   return (
     <motion.div
@@ -36,7 +37,7 @@ function ItemCard({ item, section, onView, onEdit, onDelete }) {
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap'
           }}>
-            {item.name}
+            {displayName}
           </h4>
           
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
@@ -77,8 +78,8 @@ function ItemCard({ item, section, onView, onEdit, onDelete }) {
           )}
         </div>
         
-        <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
-          <motion.button
+          <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+            <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="action-btn"
@@ -167,6 +168,16 @@ export default function AdminList({ section, onToast }) {
         const json = await res.json();
         setData(json.categories || []);
         onToast?.(`Loaded ${json.categories?.length || 0} categories`, 'success');
+      } else if (section === 'blogs') {
+        const res = await fetch('/api/blogs');
+        const json = await res.json();
+        setData(json.blogs || []);
+        onToast?.(`Loaded ${json.blogs?.length || 0} blogs`, 'success');
+      } else if (section === 'tops') {
+        const res = await fetch('/api/tops');
+        const json = await res.json();
+        setData(json.tops || []);
+        onToast?.(`Loaded ${json.tops?.length || 0} tops`, 'success');
       } else {
         setData([]);
       }
@@ -186,22 +197,34 @@ export default function AdminList({ section, onToast }) {
 
   // Filter and sort data
   const filteredAndSortedData = data
-    .filter(item => 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter(item => {
+      const name = (item.name || item.title || '').toLowerCase();
+      const slug = (item.slug || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      const term = (searchTerm || '').toLowerCase();
+      return name.includes(term) || slug.includes(term) || desc.includes(term);
+    })
     .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'slug') return a.slug.localeCompare(b.slug);
+      if (sortBy === 'name') {
+        const aName = (a.name || a.title || '').toLowerCase();
+        const bName = (b.name || b.title || '').toLowerCase();
+        return aName.localeCompare(bName);
+      }
+      if (sortBy === 'slug') {
+        const aSlug = (a.slug || '').toLowerCase();
+        const bSlug = (b.slug || '').toLowerCase();
+        return aSlug.localeCompare(bSlug);
+      }
       if (sortBy === 'created') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       return 0;
     });
 
   const handleView = (item) => {
-    const url = section === 'products' 
-      ? `/products/${encodeURIComponent(item.slug)}`
-      : `/categories/${encodeURIComponent(item.slug)}`;
+    let url = '/';
+    if (section === 'products') url = `/products/${encodeURIComponent(item.slug)}`;
+    else if (section === 'categories') url = `/categories/${encodeURIComponent(item.slug)}`;
+    else if (section === 'blogs') url = `/blog/${encodeURIComponent(item.slug)}`;
+    else if (section === 'tops') url = `/tops/${encodeURIComponent(item.slug)}`;
     window.open(url, '_blank');
   };
 
@@ -216,7 +239,11 @@ export default function AdminList({ section, onToast }) {
     (async () => {
       try {
         const adminKey = (() => { try { return localStorage.getItem('adminKey') || ''; } catch (e) { return ''; } })();
-        const res = await fetch('/api/products/' + encodeURIComponent(item.slug), { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
+        let url = '/api/products/' + encodeURIComponent(item.slug);
+        if (section === 'categories') url = '/api/categories/' + encodeURIComponent(item.slug);
+        if (section === 'blogs') url = '/api/blogs/' + encodeURIComponent(item.slug);
+        if (section === 'tops') url = '/api/tops/' + encodeURIComponent(item.slug);
+        const res = await fetch(url, { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
         if (!res.ok) {
           const txt = await res.text();
           onToast?.(`Delete failed: ${res.status} ${txt}`, 'error');

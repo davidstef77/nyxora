@@ -109,6 +109,8 @@ export default function AdminShell() {
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'products', label: 'Products', icon: '📦' },
     { id: 'categories', label: 'Categories', icon: '📂' },
+    { id: 'blogs', label: 'Blogs', icon: '📰' },
+    { id: 'tops', label: 'Topuri', icon: '🏆' },
     { id: 'settings', label: 'Settings', icon: '⚙️' }
   ];
 
@@ -116,19 +118,25 @@ export default function AdminShell() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [productsRes, categoriesRes] = await Promise.all([
+        const [productsRes, categoriesRes, blogsRes, topsRes] = await Promise.all([
           fetch('/api/products'),
-          fetch('/api/categories')
+          fetch('/api/categories'),
+          fetch('/api/blogs'),
+          fetch('/api/tops')
         ]);
         
-        const [productsData, categoriesData] = await Promise.all([
+        const [productsData, categoriesData, blogsData, topsData] = await Promise.all([
           productsRes.json(),
-          categoriesRes.json()
+          categoriesRes.json(),
+          blogsRes.json(),
+          topsRes.json()
         ]);
 
         setStats({
           products: productsData.products?.length || 0,
-          categories: categoriesData.categories?.length || 0
+          categories: categoriesData.categories?.length || 0,
+          blogs: blogsData.blogs?.length || 0,
+          tops: topsData.tops?.length || 0
         });
       } catch (error) {
         console.error('Failed to fetch stats:', error);
