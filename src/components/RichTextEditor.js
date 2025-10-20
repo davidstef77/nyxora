@@ -23,9 +23,18 @@ function ProductInsertControls({ products = [], onInsert }) {
   ), [products]);
 
   const handleInsert = useCallback(() => {
-    if (!selectedSlug) return;
+    console.log('Product insert button clicked, selectedSlug:', selectedSlug);
+    if (!selectedSlug) {
+      console.log('No selected slug, returning');
+      return;
+    }
     const product = products.find((p) => p.slug === selectedSlug);
-    if (!product) return;
+    console.log('Found product:', product);
+    if (!product) {
+      console.log('Product not found, returning');
+      return;
+    }
+    console.log('Calling onInsert with product:', product);
     onInsert?.(product);
   }, [selectedSlug, onInsert, products]);
 

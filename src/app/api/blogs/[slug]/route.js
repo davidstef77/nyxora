@@ -21,7 +21,7 @@ async function isAuthorized(request) {
 export async function GET(request, { params }) {
   try {
     await connect();
-    const { slug } = params;
+    const { slug } = await params;
     const b = await Blog.findOne({ slug }).lean();
     if (!b) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify({ blog: b }), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -38,7 +38,7 @@ export async function PUT(request, { params }) {
 
   try {
     await connect();
-    const { slug } = params;
+    const { slug } = await params;
     const body = await request.json();
     const update = { ...body };
     delete update._id;
@@ -60,7 +60,7 @@ export async function DELETE(request, { params }) {
 
   try {
     await connect();
-    const { slug } = params;
+    const { slug } = await params;
     const res = await Blog.findOneAndDelete({ slug }).lean();
     if (!res) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify({ success: true }), { status: 200 });

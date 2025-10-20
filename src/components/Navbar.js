@@ -67,11 +67,15 @@ export default function Navbar() {
             </Link>
 
             {/* Primary nav links (visible on md+) */}
+            {/** Render links from a static constant to guarantee identical server/client HTML */}
             <nav className="hidden sm:flex items-center gap-4 ml-6">
-              <Link href="/products" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Produse</Link>
-              <Link href="/categories" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Categorii</Link>
-              <Link href="/blog" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Blog</Link>
-              <Link href="/tops" className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>Topuri</Link>
+              {[
+                { href: '/products', label: 'Produse' },
+                { href: '/blog', label: 'Blog' },
+                { href: '/tops', label: 'Topuri' }
+              ].map(link => (
+                <Link key={link.href} href={link.href} className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>{link.label}</Link>
+              ))}
             </nav>
 
             {/* Mobile menu toggle (visible on small screens) */}
@@ -173,10 +177,9 @@ export default function Navbar() {
         {showMobileMenu && (
           <div className="fixed left-2 right-2 top-20 z-40 sm:hidden bg-[rgba(17,24,39,0.85)] rounded-2xl shadow-lg p-3 backdrop-blur-md">
           <nav className="flex flex-col gap-2">
-            <Link href="/products" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Produse</Link>
-            <Link href="/categories" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Categorii</Link>
-            <Link href="/blog" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Blog</Link>
-            <Link href="/tops" className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>Topuri</Link>
+            {[{ href: '/products', label: 'Produse' }, { href: '/blog', label: 'Blog' }, { href: '/tops', label: 'Topuri' }].map(l => (
+              <Link key={l.href} href={l.href} className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>{l.label}</Link>
+            ))}
           </nav>
           </div>
         )}

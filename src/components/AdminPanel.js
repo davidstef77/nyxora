@@ -48,6 +48,8 @@ export default function AdminPanel() {
   const [error, setError] = useState('');
   const [quickAffiliateLinks, setQuickAffiliateLinks] = useState([]);
   const [quickBenchmarks, setQuickBenchmarks] = useState([]);
+  const [blogProductSlugs, setBlogProductSlugs] = useState([]);
+  const [editingBlogProductSlugs, setEditingBlogProductSlugs] = useState([]);
 
   // load saved key from localStorage on mount
   useEffect(() => {
@@ -71,13 +73,151 @@ export default function AdminPanel() {
 
   const api = useApi(adminKey);
 
+  function addBlogProductSlug(slug, { editing = false } = {}) {
+    console.log('addBlogProductSlug called with:', slug, 'editing:', editing);
+    if (!slug) return;
+    const setFn = editing ? setEditingBlogProductSlugs : setBlogProductSlugs;
+    setFn((prev) => {
+      const next = Array.isArray(prev) ? [...prev] : [];
+      console.log('Current slugs:', prev, 'adding:', slug);
+      if (next.includes(slug)) {
+        console.log('Slug already exists, not adding');
+        return next;
+      }
+      next.push(slug);
+      console.log('New slugs:', next);
+      return next;
+    });
+  }
+
+  function removeBlogProductSlug(index, { editing = false } = {}) {
+    const setFn = editing ? setEditingBlogProductSlugs : setBlogProductSlugs;
+    setFn((prev) => {
+      if (!Array.isArray(prev)) return [];
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
+  }
+
+  function moveBlogProductSlug(index, delta, { editing = false } = {}) {
+    const setFn = editing ? setEditingBlogProductSlugs : setBlogProductSlugs;
+    setFn((prev) => {
+      if (!Array.isArray(prev) || prev.length < 2) return Array.isArray(prev) ? prev : [];
+      const next = [...prev];
+      const target = index + delta;
+      if (target < 0 || target >= next.length) return next;
+      const [item] = next.splice(index, 1);
+      next.splice(target, 0, item);
+      return next;
+    });
+  }
+
+  const handleAttachBlogProductDraft = (product) => {
+    console.log('handleAttachBlogProductDraft called with:', product);
+    if (!product?.slug) {
+      console.log('No product slug, returning');
+      return;
+    }
+    console.log('Adding product slug to draft:', product.slug);
+    addBlogProductSlug(product.slug);
+  };
+
+  const handleAttachBlogProductEdit = (product) => {
+    console.log('handleAttachBlogProductEdit called with:', product);
+    if (!product?.slug) {
+      console.log('No product slug, returning');
+      return;
+    }
+    console.log('Adding product slug to edit:', product.slug);
+    addBlogProductSlug(product.slug, { editing: true });
+  };
+
+  const renderBlogProductList = (slugs, { editing = false } = {}) => {
+    if (!Array.isArray(slugs) || slugs.length === 0) {
+      return <p style={{ marginTop: 8, color: '#94a3b8', fontSize: 13 }}>Nu ai adăugat produse pentru acest articol.</p>;
+    }
+
+    return (
+      <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0 0', display: 'grid', gap: 8 }}>
+        {slugs.map((slug, idx) => {
+          const product = products.find((p) => p.slug === slug);
+          const label = product?.name || product?.title || slug;
+          return (
+            <li
+              key={`${slug}-${idx}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                background: 'rgba(15,23,42,0.4)',
+                border: '1px solid rgba(148,163,184,0.25)',
+                padding: '10px 12px',
+                borderRadius: 10
+              }}
+            >
+              <div style={{ display: 'grid', gap: 4 }}>
+                <span style={{ fontWeight: 600, color: '#e2e8f0' }}>{label}</span>
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>{`/products/${slug}`}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={() => moveBlogProductSlug(idx, -1, { editing })}
+                  disabled={idx === 0}
+                  style={{ padding: '4px 8px' }}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveBlogProductSlug(idx, 1, { editing })}
+                  disabled={idx === slugs.length - 1}
+                  style={{ padding: '4px 8px' }}
+                >
+                  ↓
+                </button>
+                <a
+                  href={`/products/${slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(59,130,246,0.25)', color: '#bfdbfe', textDecoration: 'none', fontSize: 13 }}
+                >
+                  Deschide
+                </a>
+                <button
+                  type="button"
+                  onClick={() => removeBlogProductSlug(idx, { editing })}
+                  style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.2)', color: '#fecaca', borderRadius: 6 }}
+                >
+                  Șterge
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   async function loadAll() {
     setLoading(true);
     setError('');
     try {
       const data = await api.fetchJSON('/api/data');
       setCategories(data.categories || []);
-      setProducts(data.featuredProducts || []);
+      // If /api/data doesn't return featuredProducts, fall back to full products list
+      let productsList = Array.isArray(data.featuredProducts) && data.featuredProducts.length ? data.featuredProducts : [];
+      if (!productsList.length) {
+        try {
+          const p = await api.fetchJSON('/api/products');
+          productsList = Array.isArray(p.products) ? p.products : [];
+        } catch (err) {
+          productsList = [];
+        }
+      }
+      setProducts(productsList);
       // load blogs and tops separately (public lists)
       try {
         const b = await api.fetchJSON('/api/blogs?published=0');
@@ -131,7 +271,6 @@ export default function AdminPanel() {
   async function saveCategoryEdit(e) {
     e.preventDefault();
     const form = e.target;
-    if (!adminKey) { setError('Admin key required to edit categories'); return; }
     const body = {
       name: form.name.value,
       slug: form.slug.value,
@@ -175,7 +314,6 @@ export default function AdminPanel() {
   // --- Blogs ---
   async function createBlog(e) {
     e.preventDefault();
-    if (!adminKey) { setError('Admin key required to create blogs'); return; }
     const form = e.currentTarget;
     const fd = new FormData(form);
     const title = (fd.get('title') || '').toString();
@@ -193,6 +331,7 @@ export default function AdminPanel() {
       image,
       author,
       tags: tagsRaw ? tagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      featuredProducts: Array.isArray(blogProductSlugs) ? blogProductSlugs : [],
       published
     };
     if (body.published) {
@@ -202,7 +341,7 @@ export default function AdminPanel() {
     }
     const res = await api.fetchJSON('/api/blogs', { method: 'POST', body: JSON.stringify(body) });
     if (res.error) setError(res.error);
-    else { form.reset(); setBlogContentDraft(''); loadAll(); }
+    else { form.reset(); setBlogContentDraft(''); setBlogProductSlugs([]); loadAll(); }
   }
 
 
@@ -215,7 +354,6 @@ export default function AdminPanel() {
 
   async function saveBlogEdit(e) {
     e.preventDefault();
-    if (!adminKey) { setError('Admin key required to edit blogs'); return; }
     const form = e.currentTarget;
     const fd = new FormData(form);
     const title = (fd.get('title') || '').toString();
@@ -233,6 +371,7 @@ export default function AdminPanel() {
       image,
       author,
       tags: tagsRaw ? tagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      featuredProducts: Array.isArray(editingBlogProductSlugs) ? editingBlogProductSlugs : [],
       published
     };
     if (body.published) {
@@ -242,21 +381,29 @@ export default function AdminPanel() {
     }
     const target = editingBlog && (editingBlog.originalSlug || editingBlog.slug);
     const res = await api.fetchJSON('/api/blogs/' + encodeURIComponent(target), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.error) setError('Update failed: ' + res.error); else { setEditingBlog(null); setEditingBlogContent(''); loadAll(); }
+    if (res.error) setError('Update failed: ' + res.error); else { setEditingBlog(null); setEditingBlogContent(''); setEditingBlogProductSlugs([]); loadAll(); }
   }
 
   // --- Tops ---
   async function createTop(e) {
     e.preventDefault();
-    if (!adminKey) { setError('Admin key required to create tops'); return; }
     const form = e.currentTarget;
     const fd = new FormData(form);
     const title = (fd.get('title') || '').toString();
     const slug = (fd.get('slug') || '').toString();
     const description = (fd.get('description') || '').toString();
     const published = fd.get('published') !== null;
-    // items come from topItems state
-    const items = Array.isArray(topItems) ? topItems : [];
+    // items come from topItems state - sanitize and normalize
+    const rawItems = Array.isArray(topItems) ? topItems : [];
+    const items = rawItems
+      .filter(Boolean)
+      .map((it, idx) => ({
+        productSlug: it.productSlug || '',
+        position: Number(it.position) || (idx + 1),
+        customNote: it.customNote || ''
+      }))
+      .filter(i => i.productSlug);
+
     const body = { title, slug, description, items, published };
     const res = await api.fetchJSON('/api/tops', { method: 'POST', body: JSON.stringify(body) });
     if (res.error) setError(res.error);
@@ -272,14 +419,22 @@ export default function AdminPanel() {
 
   async function saveTopEdit(e) {
     e.preventDefault();
-    if (!adminKey) { setError('Admin key required to edit tops'); return; }
     const form = e.currentTarget;
     const fd = new FormData(form);
     const title = (fd.get('title') || '').toString();
     const slug = (fd.get('slug') || '').toString();
     const description = (fd.get('description') || '').toString();
     const published = fd.get('published') !== null;
-    const items = Array.isArray(editingTopItems) ? editingTopItems : [];
+    const rawItems = Array.isArray(editingTopItems) ? editingTopItems : [];
+    const items = rawItems
+      .filter(Boolean)
+      .map((it, idx) => ({
+        productSlug: it.productSlug || '',
+        position: Number(it.position) || (idx + 1),
+        customNote: it.customNote || ''
+      }))
+      .filter(i => i.productSlug);
+
     const body = { title, slug, description, items, published };
     const target = editingTop && (editingTop.originalSlug || editingTop.slug);
     const res = await api.fetchJSON('/api/tops/' + encodeURIComponent(target), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -288,23 +443,29 @@ export default function AdminPanel() {
 
   // Helpers for managing top items in the UI
   function addTopItem() {
-    setTopItems([...topItems, { title: '', description: '', productRef: '', rank: (topItems.length + 1) }]);
+    setTopItems([...topItems, { productSlug: '', position: (topItems.length + 1), customNote: '' }]);
   }
   function updateTopItem(idx, patch) {
     const copy = [...topItems]; copy[idx] = { ...copy[idx], ...patch }; setTopItems(copy);
   }
   function removeTopItem(idx) {
-    const copy = [...topItems]; copy.splice(idx, 1); setTopItems(copy);
+    const copy = [...topItems]; copy.splice(idx, 1); 
+    // Update positions for remaining items
+    copy.forEach((item, i) => { item.position = i + 1; });
+    setTopItems(copy);
   }
 
   function addEditingTopItem() {
-    setEditingTopItems([...editingTopItems, { title: '', description: '', productRef: '', rank: (editingTopItems.length + 1) }]);
+    setEditingTopItems([...editingTopItems, { productSlug: '', position: (editingTopItems.length + 1), customNote: '' }]);
   }
   function updateEditingTopItem(idx, patch) {
     const copy = [...editingTopItems]; copy[idx] = { ...copy[idx], ...patch }; setEditingTopItems(copy);
   }
   function removeEditingTopItem(idx) {
-    const copy = [...editingTopItems]; copy.splice(idx, 1); setEditingTopItems(copy);
+    const copy = [...editingTopItems]; copy.splice(idx, 1);
+    // Update positions for remaining items
+    copy.forEach((item, i) => { item.position = i + 1; });
+    setEditingTopItems(copy);
   }
 
   return (
@@ -417,20 +578,24 @@ export default function AdminPanel() {
                     <input name="tags" defaultValue={(b.tags || []).join(',')} placeholder="tag1, tag2" style={{ padding: 10, borderRadius: 8 }} />
                   </div>
                   <textarea name="excerpt" defaultValue={b.excerpt || ''} placeholder="Scurt rezumat (excerpt)" style={{ padding: 10, borderRadius: 8, minHeight: 80 }} />
-                  <RichTextEditor value={editingBlogContent} onChange={setEditingBlogContent} products={products} placeholder="Conținutul articolului" />
+                  <RichTextEditor value={editingBlogContent} onChange={setEditingBlogContent} products={products} placeholder="Conținutul articolului" onInsertProduct={handleAttachBlogProductEdit} />
+                  <div style={{ marginTop: 8, background: 'rgba(15,23,42,0.35)', padding: 12, borderRadius: 12, border: '1px dashed rgba(148,163,184,0.35)' }}>
+                    <h4 style={{ margin: 0, color: '#cbd5f5', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Produse atașate articolului</h4>
+                    {renderBlogProductList(editingBlogProductSlugs, { editing: true })}
+                  </div>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                     <input name="published" type="checkbox" defaultChecked={b.published} />
                     Publicat
                   </label>
                   <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                     <button type="submit">Salvează</button>
-                    <button type="button" onClick={() => { setEditingBlog(null); setEditingBlogContent(''); }}>Anulează</button>
+                    <button type="button" onClick={() => { setEditingBlog(null); setEditingBlogContent(''); setEditingBlogProductSlugs([]); }}>Anulează</button>
                   </div>
                 </form>
               ) : (
                 <>
                   <strong>{b.title}</strong> — {b.slug}
-                  <button onClick={() => { setEditingBlog({ ...b, originalSlug: b.slug }); setEditingBlogContent(b.content || ''); }} style={{ marginLeft: 8 }}>Edit</button>
+                  <button onClick={() => { setEditingBlog({ ...b, originalSlug: b.slug }); setEditingBlogContent(b.content || ''); setEditingBlogProductSlugs(Array.isArray(b.featuredProducts) ? b.featuredProducts : []); }} style={{ marginLeft: 8 }}>Edit</button>
                   <button onClick={() => deleteBlog(b.slug)} style={{ marginLeft: 8 }}>Delete</button>
                 </>
               )}
@@ -446,7 +611,11 @@ export default function AdminPanel() {
           <input name="image" placeholder="image url" style={{ display: 'block', marginBottom: 6, padding: 10, borderRadius: 8 }} />
           <input name="tags" placeholder="tags (comma separated)" style={{ display: 'block', marginBottom: 6, padding: 10, borderRadius: 8 }} />
           <textarea name="excerpt" placeholder="Scurt rezumat (excerpt)" style={{ display: 'block', marginBottom: 12, padding: 10, borderRadius: 8 }} />
-          <RichTextEditor value={blogContentDraft} onChange={setBlogContentDraft} products={products} placeholder="Conținutul articolului" />
+          <RichTextEditor value={blogContentDraft} onChange={setBlogContentDraft} products={products} placeholder="Conținutul articolului" onInsertProduct={handleAttachBlogProductDraft} />
+          <div style={{ marginTop: 12, background: 'rgba(15,23,42,0.35)', padding: 12, borderRadius: 12, border: '1px dashed rgba(148,163,184,0.35)' }}>
+            <h4 style={{ margin: 0, color: '#cbd5f5', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Produse atașate articolului</h4>
+            {renderBlogProductList(blogProductSlugs)}
+          </div>
           <label style={{ display: 'block', margin: '12px 0' }}><input type="checkbox" name="published" /> Publică imediat</label>
           <button type="submit">Create Blog</button>
         </form>
@@ -466,19 +635,34 @@ export default function AdminPanel() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input name="published" type="checkbox" defaultChecked={t.published} />Published</label>
                   </div>
                   <div style={{ marginTop: 8 }}>
-                    <h4>Items</h4>
-                    {editingTopItems.map((it, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center' }}>
-                        <input value={it.title || ''} onChange={ev => updateEditingTopItem(idx, { title: ev.target.value })} placeholder="Title" />
-                        <input value={it.description || ''} onChange={ev => updateEditingTopItem(idx, { description: ev.target.value })} placeholder="Description" />
-                        <select value={it.productRef || ''} onChange={ev => updateEditingTopItem(idx, { productRef: ev.target.value })}>
-                          <option value="">(no product)</option>
-                          {products.map(p => (<option key={p._id} value={p._id}>{p.name}</option>))}
-                        </select>
-                        <input type="number" value={it.rank || ''} onChange={ev => updateEditingTopItem(idx, { rank: Number(ev.target.value) })} style={{ width: 80 }} />
-                        <button type="button" onClick={() => removeEditingTopItem(idx)}>Remove</button>
-                      </div>
-                    ))}
+                    <h4>Podium Items (Position-based)</h4>
+                    {editingTopItems.map((it, idx) => {
+                      const product = products.find(p => p.slug === it.productSlug);
+                      return (
+                        <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center', padding: 8, background: 'rgba(15,23,42,0.3)', borderRadius: 8 }}>
+                          <span style={{ minWidth: 30, fontWeight: 'bold', color: '#fbbf24' }}>#{it.position}</span>
+                          <select value={it.productSlug || ''} onChange={ev => updateEditingTopItem(idx, { productSlug: ev.target.value })} style={{ minWidth: 200 }}>
+                            <option value="">(select product)</option>
+                            {products.map(p => (<option key={p.slug} value={p.slug}>{p.name}</option>))}
+                          </select>
+                          {product && <span style={{ fontSize: 12, color: '#94a3b8' }}>({product.name})</span>}
+                          <input 
+                            value={it.customNote || ''} 
+                            onChange={ev => updateEditingTopItem(idx, { customNote: ev.target.value })} 
+                            placeholder="Optional custom note" 
+                            style={{ flex: 1 }}
+                          />
+                          <input 
+                            type="number" 
+                            value={it.position || ''} 
+                            onChange={ev => updateEditingTopItem(idx, { position: Number(ev.target.value) })} 
+                            style={{ width: 80 }}
+                            min="1"
+                          />
+                          <button type="button" onClick={() => removeEditingTopItem(idx)}>Remove</button>
+                        </div>
+                      );
+                    })}
                     <button type="button" onClick={addEditingTopItem}>Add item</button>
                   </div>
                   <div style={{ marginTop: 8 }}>
@@ -489,7 +673,15 @@ export default function AdminPanel() {
               ) : (
                 <>
                   <strong>{t.title}</strong> — {t.slug}
-                  <button onClick={() => { setEditingTop({ ...t, originalSlug: t.slug }); setEditingTopItems(t.items || []); }} style={{ marginLeft: 8 }}>Edit</button>
+                  <button onClick={() => {
+                    setEditingTop({ ...t, originalSlug: t.slug });
+                    const normalized = Array.isArray(t.items) ? t.items.filter(Boolean).map((it, idx) => ({
+                      productSlug: it.productSlug || (it.productRef ? String(it.productRef) : ''),
+                      position: Number(it.position) || (it.rank || idx + 1),
+                      customNote: it.customNote || it.description || ''
+                    })).filter(i => i.productSlug) : [];
+                    setEditingTopItems(normalized);
+                  }} style={{ marginLeft: 8 }}>Edit</button>
                   <button onClick={() => deleteTop(t.slug)} style={{ marginLeft: 8 }}>Delete</button>
                 </>
               )}
@@ -503,19 +695,34 @@ export default function AdminPanel() {
           <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6 }} />
           <textarea name="description" placeholder="description" style={{ display: 'block', marginBottom: 6 }} />
           <div>
-            <h4>Items</h4>
-            {topItems.map((it, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center' }}>
-                <input value={it.title || ''} onChange={ev => updateTopItem(idx, { title: ev.target.value })} placeholder="Title" />
-                <input value={it.description || ''} onChange={ev => updateTopItem(idx, { description: ev.target.value })} placeholder="Description" />
-                <select value={it.productRef || ''} onChange={ev => updateTopItem(idx, { productRef: ev.target.value })}>
-                  <option value="">(no product)</option>
-                  {products.map(p => (<option key={p._id} value={p._id}>{p.name}</option>))}
-                </select>
-                <input type="number" value={it.rank || ''} onChange={ev => updateTopItem(idx, { rank: Number(ev.target.value) })} style={{ width: 80 }} />
-                <button type="button" onClick={() => removeTopItem(idx)}>Remove</button>
-              </div>
-            ))}
+            <h4>Podium Items (Position-based)</h4>
+            {topItems.map((it, idx) => {
+              const product = products.find(p => p.slug === it.productSlug);
+              return (
+                <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center', padding: 8, background: 'rgba(15,23,42,0.3)', borderRadius: 8 }}>
+                  <span style={{ minWidth: 30, fontWeight: 'bold', color: '#fbbf24' }}>#{it.position}</span>
+                  <select value={it.productSlug || ''} onChange={ev => updateTopItem(idx, { productSlug: ev.target.value })} style={{ minWidth: 200 }}>
+                    <option value="">(select product)</option>
+                    {products.map(p => (<option key={p.slug} value={p.slug}>{p.name}</option>))}
+                  </select>
+                  {product && <span style={{ fontSize: 12, color: '#94a3b8' }}>({product.name})</span>}
+                  <input 
+                    value={it.customNote || ''} 
+                    onChange={ev => updateTopItem(idx, { customNote: ev.target.value })} 
+                    placeholder="Optional custom note" 
+                    style={{ flex: 1 }}
+                  />
+                  <input 
+                    type="number" 
+                    value={it.position || ''} 
+                    onChange={ev => updateTopItem(idx, { position: Number(ev.target.value) })} 
+                    style={{ width: 80 }}
+                    min="1"
+                  />
+                  <button type="button" onClick={() => removeTopItem(idx)}>Remove</button>
+                </div>
+              );
+            })}
             <button type="button" onClick={addTopItem}>Add item</button>
           </div>
           <label style={{ display: 'block', marginBottom: 6 }}><input type="checkbox" name="published" /> Publish immediately</label>

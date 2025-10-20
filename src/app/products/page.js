@@ -6,6 +6,33 @@ import Product from '../api/lib/models/Product'
 import Category from '../api/lib/models/Category'
 // Manufacturer references removed — brand data no longer displayed
 
+export const metadata = {
+  title: 'Produse - Recenzii și Comparații | Nyxora',
+  description: 'Descoperă cele mai bune produse tech pe Nyxora. Recenzii detaliate, comparații de preț și recomandări pentru componente PC, laptopuri, periferice și multe altele.',
+  keywords: 'produse tech, recenzii, comparații preț, componente PC, laptopuri, periferice, recomandări',
+  authors: [{ name: 'Nyxora' }],
+  openGraph: {
+    type: 'website',
+    siteName: 'Nyxora',
+    title: 'Produse Tech - Recenzii și Comparații | Nyxora',
+    description: 'Găsește cele mai bune produse tech cu recenzii detaliate și comparații de preț pe Nyxora.',
+    url: 'https://nyxora.ro/products',
+    images: [{ url: 'https://nyxora.ro/og-image.png', width: 1200, height: 630 }],
+    locale: 'ro_RO'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@nyxora',
+    title: 'Produse Tech - Nyxora',
+    description: 'Descoperă cele mai bune produse tech cu recenzii și comparații de preț.',
+    images: ['https://nyxora.ro/og-image.png']
+  },
+  alternates: {
+    canonical: 'https://nyxora.ro/products'
+  },
+  robots: 'index,follow,max-snippet:-1,max-image-preview:large'
+};
+
 function parsePriceToNumber(price) {
   if (price == null) return null
   // Try to extract numeric part, allow commas and dots
@@ -15,10 +42,11 @@ function parsePriceToNumber(price) {
 }
 
 export default async function ProductsPage({ searchParams }) {
-  const q = (searchParams?.q || '').trim();
-  const categoryFilter = (searchParams?.category || '').trim();
-  const minPrice = searchParams?.minPrice ? Number(searchParams.minPrice) : null;
-  const maxPrice = searchParams?.maxPrice ? Number(searchParams.maxPrice) : null;
+  const params = await searchParams; // await searchParams for Next.js 15+
+  const q = (params?.q || '').trim();
+  const categoryFilter = (params?.category || '').trim();
+  const minPrice = params?.minPrice ? Number(params.minPrice) : null;
+  const maxPrice = params?.maxPrice ? Number(params.maxPrice) : null;
 
   try {
     await connect();
@@ -81,8 +109,8 @@ export default async function ProductsPage({ searchParams }) {
                 <div>
                   <label className="block text-sm text-slate-300 mb-1">Preț (RON)</label>
                   <div className="flex gap-2">
-                    <input name="minPrice" defaultValue={searchParams?.minPrice || ''} placeholder="Min" className="w-20 sm:w-24 bg-slate-800/40 border border-slate-700 px-2 py-2 rounded-md text-slate-100" />
-                    <input name="maxPrice" defaultValue={searchParams?.maxPrice || ''} placeholder="Max" className="w-20 sm:w-24 bg-slate-800/40 border border-slate-700 px-2 py-2 rounded-md text-slate-100" />
+                    <input name="minPrice" defaultValue={params?.minPrice || ''} placeholder="Min" className="w-20 sm:w-24 bg-slate-800/40 border border-slate-700 px-2 py-2 rounded-md text-slate-100" />
+                    <input name="maxPrice" defaultValue={params?.maxPrice || ''} placeholder="Max" className="w-20 sm:w-24 bg-slate-800/40 border border-slate-700 px-2 py-2 rounded-md text-slate-100" />
                   </div>
                 </div>
 

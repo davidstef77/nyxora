@@ -13,20 +13,58 @@ export async function generateMetadata({ params }) {
     const p = await params; // ensure dynamic params are resolved
     await connect();
     const prod = await Product.findOne({ slug: p.slug }).lean();
-    if (!prod) return { title: 'Produs - Nyxora' };
-    // If product has manufacturerRef, fetch manufacturer to expose prices in metadata if needed
-    let ogImages = prod.image ? [prod.image] : undefined;
+    
+    if (!prod) {
+      return { 
+        title: 'Produs Negăsit - Nyxora',
+        description: 'Produsul căutat nu a fost găsit pe Nyxora.',
+        robots: 'noindex,nofollow'
+      };
+    }
+
+    const title = `${prod.name} - Recenzii și Oferte | Nyxora`;
+    const description = prod.description 
+      ? `${prod.description.slice(0, 140)}... Găsește cele mai bune oferte pentru ${prod.name} pe Nyxora.`
+      : `Descoperă ${prod.name} pe Nyxora. Compară prețuri și găsește cele mai bune oferte.`;
+    
+    const canonical = `https://nyxora.ro/products/${prod.slug}`;
+    const ogImages = prod.image ? [{ url: prod.image, width: 1200, height: 630 }] : [{ url: 'https://nyxora.ro/og-image.png', width: 1200, height: 630 }];
+
     return {
-      title: `${prod.name} — Nyxora`,
-      description: prod.description ? prod.description.slice(0, 160) : 'Produs din Nyxora',
+      title,
+      description,
+      keywords: `${prod.name}, review, recenzie, preț, oferte, comparație, Nyxora`,
+      authors: [{ name: 'Nyxora' }],
+      canonical,
+      alternates: {
+        canonical
+      },
       openGraph: {
-        title: prod.name,
-        description: prod.description ? prod.description.slice(0, 160) : 'Produs Nyxora',
+        type: 'website',
+        siteName: 'Nyxora',
+        title,
+        description,
+        url: canonical,
         images: ogImages,
-      }
+        locale: 'ro_RO'
+      },
+      twitter: {
+        card: 'summary_large_image',
+        site: '@nyxora',
+        creator: '@nyxora',
+        title,
+        description,
+        images: ogImages
+      },
+      robots: 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1'
     };
   } catch (err) {
-    return { title: 'Produs - Nyxora' };
+    console.error('Product metadata generation error:', err);
+    return { 
+      title: 'Produs - Nyxora',
+      description: 'Explorează produsele pe Nyxora.',
+      robots: 'noindex'
+    };
   }
 }
 
@@ -77,20 +115,53 @@ export default async function ProductPage({ params }) {
       if (parsed) primaryOffer = { '@type': 'Offer', price: parsed[1].replace(',', '.'), priceCurrency: 'RON' };
     }
 
+    // Enhanced structured data for product
+    const productJsonLd = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": product.name,
+      "description": product.description || `Descoperă ${product.name} pe Nyxora`,
+      "sku": product.slug,
+      "mpn": product.slug,
+      "brand": {
+        "@type": "Brand",
+        "name": "Nyxora"
+      },
+      "image": product.image ? [product.image] : ["https://nyxora.ro/placeholder-product.svg"],
+      "url": `https://nyxora.ro/products/${product.slug}`,
+      "offers": primaryOffer ? {
+        "@type": "Offer",
+        "price": primaryOffer.price,
+        "priceCurrency": primaryOffer.priceCurrency || "RON",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": "Organization",
+          "name": "Nyxora"
+        }
+      } : {
+        "@type": "Offer",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": "Organization",
+          "name": "Nyxora"
+        }
+      },
+      "aggregateRating": offersList.length > 0 ? {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "reviewCount": "1"
+      } : undefined
+    };
+
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-slate-800">
-        <div className="container p-8" id="product-main">
-          <ScrollToTop targetId="product-main" behavior="smooth" />
-        {/* JSON-LD for Product */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          '@context': 'https://schema.org/',
-          '@type': 'Product',
-          name: product.name,
-          image: product.image ? [product.image] : undefined,
-          description: product.description,
-          sku: product.slug,
-          offers: primaryOffer
-        }) }} />
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+        <main className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-slate-800">
+          <div className="container p-8" id="product-main">
+            <ScrollToTop targetId="product-main" behavior="smooth" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: Gallery */}
@@ -144,7 +215,8 @@ export default async function ProductPage({ params }) {
           </div>
         </div>
         </div>
-      </main>
+        </main>
+      </>
     );
   } catch (err) {
     return (

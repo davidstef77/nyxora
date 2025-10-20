@@ -4,11 +4,9 @@ import slugify from 'slugify';
 const { Schema } = mongoose;
 
 const TopItemSchema = new Schema({
-  title: { type: String, trim: true },
-  description: { type: String, trim: true },
-  productRef: { type: Schema.Types.ObjectId, ref: 'Product' },
-  image: { type: String, trim: true },
-  rank: { type: Number }
+  productSlug: { type: String, required: true, trim: true },
+  position: { type: Number, required: true, min: 1 },
+  customNote: { type: String, trim: true } // optional custom note per product in top
 }, { _id: false });
 
 const TopSchema = new Schema({
