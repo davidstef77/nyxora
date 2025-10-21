@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import SmartImage from '../../components/SmartImage'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -20,7 +21,7 @@ export default function ProfilePage() {
         <h2 className="text-2xl font-semibold mb-4">Profilul meu</h2>
         <div className="flex items-center gap-4">
           {session.user?.image ? (
-            <img src={session.user.image} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+            <SmartImage src={session.user.image} alt="Avatar" width={64} height={64} className="w-16 h-16 rounded-full object-cover" />
           ) : (
             <div className="w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center">?
             </div>

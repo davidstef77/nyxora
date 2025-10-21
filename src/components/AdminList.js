@@ -190,6 +190,7 @@ export default function AdminList({ section, onToast }) {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { 
     load(); 
     setSearchTerm(''); // Reset search when section changes

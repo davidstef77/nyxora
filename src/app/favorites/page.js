@@ -62,12 +62,12 @@ export default function FavoritesPage() {
       }
     }
 
-    load();
+  load();
 
     function onUpdate() { load(); }
     window.addEventListener('favorites-updated', onUpdate);
     return () => window.removeEventListener('favorites-updated', onUpdate);
-  }, []);
+  }, [isAuthenticated]);
 
   if (loading) return <main className="container px-6 py-16"> <p className="text-slate-400">Se încarcă...</p> </main>;
 

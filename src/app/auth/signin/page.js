@@ -4,6 +4,7 @@ import { signIn, useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import SmartImage from '../../../components/SmartImage'
 
 export default function SignIn() {
   const [error, setError] = useState('')
@@ -44,7 +45,7 @@ export default function SignIn() {
 
             <div className="mt-8 space-y-6">
               <button onClick={handleGoogle} disabled={loading} className="w-full flex items-center justify-center gap-3 px-4 py-2 bg-white text-black rounded-md">
-                <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
+                <SmartImage src="/google-logo.svg" alt="Google" width={20} height={20} className="w-5 h-5" />
                 {loading ? 'Redirecționare...' : 'Sign in with Google'}
               </button>
             </div>

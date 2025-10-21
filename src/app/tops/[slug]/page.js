@@ -217,7 +217,7 @@ export default async function TopDetail({ params }) {
                             </p>
                           )}
                           {item.customNote && (
-                            <p className="text-sm italic text-slate-300 mb-2">"{item.customNote}"</p>
+                            <p className="text-sm italic text-slate-300 mb-2">“{item.customNote}”</p>
                           )}
                           <div className="flex items-center justify-between">
                             {product.price && (
