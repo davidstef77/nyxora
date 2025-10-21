@@ -1,20 +1,34 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "../components/AuthProvider";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import "../components/Footer.css";
+import { Suspense } from "react";
 import logoSrc from '../components/images/N.png';
 
+// Dynamically import components for better code splitting
+import dynamic from "next/dynamic";
+
+const Navbar = dynamic(() => import("../components/Navbar"), {
+  ssr: true,
+  loading: () => <div style={{ height: 'var(--navbar-offset)' }} />
+});
+
+const Footer = dynamic(() => import("../components/Footer"), {
+  ssr: true,
+  loading: () => <div style={{ height: '200px' }} />
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap", // Performance: Font display swap
+  preload: true
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false // Only preload primary font
 });
 
 export const metadata = {
@@ -64,23 +78,40 @@ export const metadata = {
   verification: {
     google: 'your-google-verification-code',
   },
-  icons: {
-    icon: logoSrc?.src,
-    shortcut: logoSrc?.src || '/favicon.ico',
-    apple: logoSrc?.src || '/favicon.ico'
-  }
+  // Note: icons removed to avoid conflict with public/favicon.ico
+  // If you need to customize icons, use public/ files or set link tags in head
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ro">
       <head>
-        {/* explicit favicon links so the icon shows in page meta/head */}
+        {/* Performance: DNS prefetch for external resources */}
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//www.google-analytics.com" />
+        
+        {/* Performance: Resource hints */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        
+        {/* Explicit favicon links */}
         <link rel="icon" href={logoSrc?.src || '/favicon.ico'} />
         <link rel="shortcut icon" href={logoSrc?.src || '/favicon.ico'} />
         <link rel="apple-touch-icon" href={'/apple-touch-icon.png'} />
         <meta name="theme-color" content="#0f172a" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        
+        {/* Performance: Critical CSS inlined */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            body { font-family: system-ui, -apple-system, sans-serif; }
+            .loading-skeleton { background: linear-gradient(90deg, #17181a 25%, #0f1113 50%, #17181a 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+            @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+          `
+        }} />
         
         {/* Structured Data for Organization */}
         <script
@@ -100,17 +131,47 @@ export default function RootLayout({ children }) {
             })
           }}
         />
+        
+        {/* Service Worker Registration */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                  .then(function(registration) {
+                    console.log('[SW] Service Worker registered:', registration.scope);
+                  })
+                  .catch(function(error) {
+                    console.log('[SW] Service Worker registration failed:', error);
+                  });
+              });
+            }
+          `
+        }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Navbar />
-            <main style={{ flex: 1, paddingTop: 'var(--navbar-offset)' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            minHeight: '100vh',
+            contain: 'layout style' // Performance: Containment
+          }}>
+            <Suspense fallback={<div className="loading-skeleton" style={{ height: 'var(--navbar-offset)' }} />}>
+              <Navbar />
+            </Suspense>
+            <main style={{ 
+              flex: 1, 
+              paddingTop: 'var(--navbar-offset)',
+              contain: 'layout' // Performance: Containment for main content
+            }}>
               {children}
             </main>
-            <Footer />
+            <Suspense fallback={<div className="loading-skeleton" style={{ height: '200px' }} />}>
+              <Footer />
+            </Suspense>
           </div>
         </AuthProvider>
       </body>

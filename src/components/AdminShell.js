@@ -1,12 +1,45 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import AdminList from './AdminList';
 import './admin.css';
 
-// Toast component for notifications
+// Lazy load heavy components
+const AdminList = lazy(() => import('./AdminList'));
+const motion = {
+  div: ({ children, ...props }) => <div {...props}>{children}</div>,
+  button: ({ children, ...props }) => <button {...props}>{children}</button>,
+  header: ({ children, ...props }) => <header {...props}>{children}</header>,
+  section: ({ children, ...props }) => <section {...props}>{children}</section>
+};
+const AnimatePresence = ({ children }) => children;
+
+// Simple loading component
+function LoadingSpinner() {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      padding: '40px',
+      fontSize: '14px',
+      color: '#94a3b8'
+    }}>
+      <div style={{ 
+        width: '20px', 
+        height: '20px', 
+        border: '2px solid #3b82f6', 
+        borderTop: '2px solid transparent', 
+        borderRadius: '50%',
+        marginRight: '12px',
+        animation: 'spin 1s linear infinite'
+      }}></div>
+      Loading...
+    </div>
+  );
+}
+
+// Toast component for notifications (simplified)
 function Toast({ message, type, onClose }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 4000);
@@ -14,12 +47,19 @@ function Toast({ message, type, onClose }) {
   }, [onClose]);
 
   return (
-    <motion.div
-      initial={{ x: 300, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 300, opacity: 0 }}
-      className={`toast ${type}`}
-    >
+    <div className={`toast ${type}`} style={{
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      zIndex: 9999,
+      background: type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#10b981',
+      color: 'white',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      transform: 'translateX(0)',
+      transition: 'all 0.3s ease'
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span>
           {type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
@@ -39,17 +79,16 @@ function Toast({ message, type, onClose }) {
           ×
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// Quick stats component
+// Quick stats component (simplified)
 function QuickStats({ stats, loading }) {
   return (
     <div className="card-grid" style={{ marginBottom: '24px' }}>
-      <motion.div 
+      <div 
         className="card"
-        whileHover={{ scale: 1.02 }}
         style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1))' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -61,11 +100,10 @@ function QuickStats({ stats, loading }) {
           </div>
           <div style={{ fontSize: '40px', opacity: 0.6 }}>📦</div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div 
+      <div 
         className="card"
-        whileHover={{ scale: 1.02 }}
         style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1))' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -77,11 +115,10 @@ function QuickStats({ stats, loading }) {
           </div>
           <div style={{ fontSize: '40px', opacity: 0.6 }}>📂</div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div 
+      <div 
         className="card"
-        whileHover={{ scale: 1.02 }}
         style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1))' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -93,7 +130,7 @@ function QuickStats({ stats, loading }) {
           </div>
           <div style={{ fontSize: '40px', opacity: 0.6 }}>⚡</div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -168,38 +205,36 @@ export default function AdminShell() {
   };
 
   return (
-    <motion.div 
+    <div 
       className="admin-shell"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      style={{ opacity: 1, transition: 'opacity 0.6s' }}
     >
       {/* Toast notifications */}
-      <AnimatePresence>
-        {toast && (
-          <Toast 
-            message={toast.message} 
-            type={toast.type} 
-            onClose={() => setToast(null)} 
-          />
-        )}
-      </AnimatePresence>
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
 
       <nav className="admin-nav">
         <div className="brand">Nyxora Admin</div>
         
         <div style={{ marginTop: 32 }}>
           {sections.map((item) => (
-            <motion.button
+            <button
               key={item.id}
               className={section === item.id ? 'active' : ''}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
+              style={{
+                transform: section === item.id ? 'translateX(4px)' : 'translateX(0)',
+                transition: 'transform 0.2s'
+              }}
               onClick={() => setSection(item.id)}
             >
               <span style={{ fontSize: '18px' }}>{item.icon}</span>
               <span>{item.label}</span>
-            </motion.button>
+            </button>
           ))}
         </div>
 
@@ -210,28 +245,27 @@ export default function AdminShell() {
           <div style={{ fontWeight: '600', color: '#fff', marginBottom: '12px' }}>
             {session?.user?.name || 'Admin'}
           </div>
-          <motion.button
+          <button
             className="action-btn error"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => signOut()}
             style={{ 
               width: '100%', 
               fontSize: '14px',
-              padding: '10px 16px'
+              padding: '10px 16px',
+              transition: 'transform 0.2s'
             }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
           >
             🚪 Sign Out
-          </motion.button>
+          </button>
         </div>
       </nav>
 
       <main className="admin-main">
-        <motion.header 
+        <header 
           className="admin-header"
-          initial={{ y: -10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          style={{ transform: 'translateY(0)', opacity: 1, transition: 'all 0.4s' }}
         >
           <div>
             <h1 className="admin-title">
@@ -242,106 +276,128 @@ export default function AdminShell() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <motion.button 
+            <button 
               className="action-btn" 
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
               onClick={refreshData}
+              style={{
+                transition: 'transform 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
             >
               🔄 Refresh
-            </motion.button>
-            <motion.button 
+            </button>
+            <button 
               className="action-btn" 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={copyUrl}
+              style={{
+                transition: 'transform 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
             >
               📋 Copy URL
-            </motion.button>
+            </button>
           </div>
-        </motion.header>
+        </header>
 
-        <AnimatePresence mode="wait">
-          <motion.section 
-            key={section}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fade-in"
-          >
-            {section === 'overview' ? (
-              <div>
-                <QuickStats stats={stats} loading={loading} />
-                
-                <div className="card">
-                  <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '700' }}>
-                    🚀 Quick Actions
-                  </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                    <motion.button
-                      className="action-btn success"
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setSection('products')}
-                      style={{ padding: '16px', justifyContent: 'center' }}
-                    >
-                      📦 Manage Products
-                    </motion.button>
-                    <motion.button
-                      className="action-btn"
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setSection('categories')}
-                      style={{ padding: '16px', justifyContent: 'center' }}
-                    >
-                      📂 Manage Categories
-                    </motion.button>
-                    <motion.button
-                      className="action-btn warning"
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setSection('settings')}
-                      style={{ padding: '16px', justifyContent: 'center' }}
-                    >
-                      ⚙️ Settings
-                    </motion.button>
-                  </div>
-                </div>
-
-                <div className="card" style={{ marginTop: '24px' }}>
-                  <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '700' }}>
-                    📈 System Health
-                  </h3>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    <div className="status-badge success">
-                      🟢 Database Connected
-                    </div>
-                    <div className="status-badge success">
-                      🔐 Authentication Active
-                    </div>
-                    <div className="status-badge success">
-                      ⚡ API Responsive
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : section === 'settings' ? (
+        <section 
+          key={section}
+          style={{ 
+            transform: 'translateY(0)', 
+            opacity: 1, 
+            transition: 'all 0.3s' 
+          }}
+          className="fade-in"
+        >
+          {section === 'overview' ? (
+            <div>
+              <QuickStats stats={stats} loading={loading} />
+              
               <div className="card">
-                <h3 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: '700' }}>
-                  ⚙️ System Settings
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '700' }}>
+                  🚀 Quick Actions
                 </h3>
-                <div style={{ color: 'var(--muted)', textAlign: 'center', padding: '48px 24px' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
-                  <h4>Settings panel coming soon</h4>
-                  <p>Configure system preferences, user management, and integrations.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  <button
+                    className="action-btn success"
+                    onClick={() => setSection('products')}
+                    style={{ 
+                      padding: '16px', 
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+                    onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  >
+                    📦 Manage Products
+                  </button>
+                  <button
+                    className="action-btn"
+                    onClick={() => setSection('categories')}
+                    style={{ 
+                      padding: '16px', 
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+                    onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  >
+                    📂 Manage Categories
+                  </button>
+                  <button
+                    className="action-btn warning"
+                    onClick={() => setSection('settings')}
+                    style={{ 
+                      padding: '16px', 
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+                    onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  >
+                    ⚙️ Settings
+                  </button>
                 </div>
               </div>
-            ) : (
-              <div className="card">
-                <AdminList section={section} onToast={showToast} />
+
+              <div className="card" style={{ marginTop: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '700' }}>
+                  📈 System Health
+                </h3>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <div className="status-badge success">
+                    🟢 Database Connected
+                  </div>
+                  <div className="status-badge success">
+                    🔐 Authentication Active
+                  </div>
+                  <div className="status-badge success">
+                    ⚡ API Responsive
+                  </div>
+                </div>
               </div>
-            )}
-          </motion.section>
-        </AnimatePresence>
+            </div>
+          ) : section === 'settings' ? (
+            <div className="card">
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: '700' }}>
+                ⚙️ System Settings
+              </h3>
+              <div style={{ color: 'var(--muted)', textAlign: 'center', padding: '48px 24px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
+                <h4>Settings panel coming soon</h4>
+                <p>Configure system preferences, user management, and integrations.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="card">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AdminList section={section} onToast={showToast} />
+              </Suspense>
+            </div>
+          )}
+        </section>
       </main>
-    </motion.div>
+    </div>
   );
 }

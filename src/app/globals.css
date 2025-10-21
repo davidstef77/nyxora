@@ -34,6 +34,20 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, sans-serif;
+  /* Performance optimizations */
+  font-display: swap;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
+/* Performance: Reduce animations and transitions on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Global container to center page content while allowing full-bleed elements */
@@ -99,7 +113,40 @@ h3 {
 img {
   max-width: 100%;
   height: auto;
-  display: block;
+  /* Performance: Prevent layout shifts */
+  contain: layout;
+}
+
+/* Performance: GPU acceleration for transforms */
+.transform, [class*="transform"] {
+  will-change: transform;
+}
+
+/* Performance: Optimize scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+  }
+}
+
+/* Performance: Critical rendering optimizations */
+body {
+  contain: layout style;
+  overflow-x: hidden;
+}
+
+/* Lazy loading support */
+.loading {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.loading.loaded {
+  opacity: 1;
 }
 
 /* Helper for full-bleed headers that still center inner content */

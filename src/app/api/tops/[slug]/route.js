@@ -11,18 +11,21 @@ function cleanKey(value) {
 async function isAuthorized(request) {
   const session = await getServerSession(authOptions);
   if (session?.user?.role === 'admin') return true;
-
   const envKey = cleanKey(process.env.ADMIN_KEY);
-  if (!envKey) return true;
-  const headerKey = cleanKey(request.headers.get('x-admin-key'));
-  return headerKey && headerKey === envKey;
+  if (envKey) {
+    const headerKey = cleanKey(request.headers.get('x-admin-key'));
+    return headerKey && headerKey === envKey;
+  }
+
+  return false;
 }
 
 export async function GET(request, { params }) {
   try {
     await connect();
-    const { slug } = params;
-    const t = await Top.findOne({ slug }).lean();
+  const { slug } = params;
+  const authorized = await isAuthorized(request);
+  const t = await Top.findOne(authorized ? { slug } : { slug, published: true }).lean();
     if (!t) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify({ top: t }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {

@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "eslint",
-    "generate:favicon": "node ./scripts/generate-favicons.js"
+    "generate:favicon": "node ./scripts/generate-favicons.js",
+    "optimize": "next build && next-bundle-analyzer",
+    "precompress": "next build",
+    "compress": "node scripts/compress-assets.js"
   },
   "dependencies": {
     "@tiptap/core": "^2.6.6",
@@ -20,6 +24,7 @@
     "@tiptap/extension-underline": "^2.6.6",
     "@tiptap/react": "^2.6.6",
     "@tiptap/starter-kit": "^2.6.6",
+    "critters": "^0.0.23",
     "framer-motion": "^12.23.22",
     "mongoose": "^8.18.3",
     "next": "15.5.4",

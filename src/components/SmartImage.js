@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 
 function isExternalUrl(url) {
@@ -24,33 +24,130 @@ function normalizeSrc(src) {
   return src;
 }
 
-export default function SmartImage({ src, alt = '', width, height, className = '', style = {}, fill = false, ...rest }) {
+function SmartImage({ 
+  src, 
+  alt = '', 
+  width, 
+  height, 
+  className = '', 
+  style = {}, 
+  fill = false, 
+  priority = false,
+  loading = 'lazy',
+  quality = 75,
+  placeholder = 'blur',
+  blurDataURL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
+  ...rest 
+}) {
   const [errored, setErrored] = useState(false);
   const normalized = normalizeSrc(src);
 
   // simple placeholder when no src provided or when load error occurred
-  const placeholder = '/placeholder-product.svg';
+  const placeholderSrc = '/placeholder-product.svg';
+  
   if (!normalized || errored) {
-    const ph = placeholder;
     if (fill) {
-      return <Image src={ph} alt={alt || 'Imagine indisponibilă'} fill className={className} style={style} />;
+      return (
+        <Image 
+          src={placeholderSrc} 
+          alt={alt || 'Imagine indisponibilă'} 
+          fill 
+          className={className} 
+          style={style}
+          loading="lazy"
+          quality={50}
+        />
+      );
     }
-    return <Image src={ph} alt={alt || 'Imagine indisponibilă'} width={width || 600} height={height || 400} className={className} style={style} />;
+    return (
+      <Image 
+        src={placeholderSrc} 
+        alt={alt || 'Imagine indisponibilă'} 
+        width={width || 300} 
+        height={height || 200} 
+        className={className} 
+        style={style}
+        loading="lazy"
+        quality={50}
+      />
+    );
   }
 
-  // external image: render plain img to avoid next/image host validation and allow cross-host sources
+  // external image: use next/image with unoptimized for external sources
   if (isExternalUrl(normalized)) {
-    const imgStyle = { display: 'block', width: fill ? '100%' : width || 'auto', height: fill ? '100%' : height || 'auto', objectFit: style.objectFit || 'cover', ...style };
-    const forbidden = ['priority', 'placeholder', 'blurDataURL', 'unoptimized', 'fetchPriority', 'sizes', 'loader', 'quality', 'layout'];
-    const imgProps = { ...rest };
-    for (const k of forbidden) delete imgProps[k];
-    return <img src={normalized} alt={alt} className={className} style={imgStyle} onError={() => setErrored(true)} {...imgProps} />;
+    if (fill) {
+      return (
+        <Image 
+          src={normalized} 
+          alt={alt} 
+          fill 
+          className={className} 
+          style={{ objectFit: 'cover', ...style }}
+          onError={() => setErrored(true)}
+          unoptimized={true}
+          loading={loading}
+          priority={priority}
+          quality={quality}
+          {...rest}
+        />
+      );
+    }
+
+    return (
+      <Image 
+        src={normalized} 
+        alt={alt} 
+        width={width || 300} 
+        height={height || 200} 
+        className={className} 
+        style={{ objectFit: 'cover', ...style }}
+        onError={() => setErrored(true)}
+        unoptimized={true}
+        loading={loading}
+        priority={priority}
+        quality={quality}
+        {...rest}
+      />
+    );
   }
 
-  // local asset - use next/image for performance
+  // local asset - use next/image for performance with optimization
   if (fill) {
-    return <Image src={normalized} alt={alt} fill className={className} style={style} onError={() => setErrored(true)} {...rest} />;
+    return (
+      <Image 
+        src={normalized} 
+        alt={alt} 
+        fill 
+        className={className} 
+        style={{ objectFit: 'cover', ...style }}
+        onError={() => setErrored(true)}
+        loading={loading}
+        priority={priority}
+        quality={quality}
+        placeholder={placeholder}
+        blurDataURL={blurDataURL}
+        {...rest}
+      />
+    );
   }
 
-  return <Image src={normalized} alt={alt} width={width} height={height} className={className} style={style} onError={() => setErrored(true)} {...rest} />;
+  return (
+    <Image 
+      src={normalized} 
+      alt={alt} 
+      width={width || 300} 
+      height={height || 200} 
+      className={className} 
+      style={{ objectFit: 'cover', ...style }}
+      onError={() => setErrored(true)}
+      loading={loading}
+      priority={priority}
+      quality={quality}
+      placeholder={placeholder}
+      blurDataURL={blurDataURL}
+      {...rest}
+    />
+  );
 }
+
+export default memo(SmartImage);

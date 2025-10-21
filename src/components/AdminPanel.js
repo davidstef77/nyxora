@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import RichTextEditor from './RichTextEditor';
 
 function sanitizeKey(v) {
@@ -19,12 +19,21 @@ function useApi(adminKey) {
   if (clean) headers['x-admin-key'] = clean;
 
   async function fetchJSON(path, opts = {}) {
-    const res = await fetch(path, { headers, ...opts });
-    const text = await res.text();
     try {
-      return JSON.parse(text || '{}');
-    } catch (e) {
-      return { error: text };
+      const res = await fetch(path, { headers, ...opts });
+      const text = await res.text();
+      
+      if (!res.ok) {
+        return { error: `HTTP ${res.status}: ${text || res.statusText}` };
+      }
+      
+      try {
+        return JSON.parse(text || '{}');
+      } catch (parseError) {
+        return { error: `Invalid JSON response: ${text.substring(0, 100)}...` };
+      }
+    } catch (fetchError) {
+      return { error: `Network error: ${fetchError.message}` };
     }
   }
 
@@ -206,33 +215,59 @@ export default function AdminPanel() {
     setError('');
     try {
       const data = await api.fetchJSON('/api/data');
-      setCategories(data.categories || []);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setCategories(Array.isArray(data.categories) ? data.categories : []);
+      
       // If /api/data doesn't return featuredProducts, fall back to full products list
       let productsList = Array.isArray(data.featuredProducts) && data.featuredProducts.length ? data.featuredProducts : [];
       if (!productsList.length) {
         try {
           const p = await api.fetchJSON('/api/products');
-          productsList = Array.isArray(p.products) ? p.products : [];
+          if (p.error) {
+            console.warn('Products API error:', p.error);
+            productsList = [];
+          } else {
+            productsList = Array.isArray(p.products) ? p.products : [];
+          }
         } catch (err) {
+          console.warn('Failed to load products:', err);
           productsList = [];
         }
       }
       setProducts(productsList);
+      
       // load blogs and tops separately (public lists)
       try {
         const b = await api.fetchJSON('/api/blogs?published=0');
-        setBlogs(Array.isArray(b.blogs) ? b.blogs : []);
+        if (b.error) {
+          console.warn('Blogs API error:', b.error);
+          setBlogs([]);
+        } else {
+          setBlogs(Array.isArray(b.blogs) ? b.blogs : []);
+        }
       } catch (e) {
+        console.warn('Failed to load blogs:', e);
         setBlogs([]);
       }
+      
       try {
         const t = await api.fetchJSON('/api/tops?published=0');
-        setTops(Array.isArray(t.tops) ? t.tops : []);
+        if (t.error) {
+          console.warn('Tops API error:', t.error);
+          setTops([]);
+        } else {
+          setTops(Array.isArray(t.tops) ? t.tops : []);
+        }
       } catch (e) {
+        console.warn('Failed to load tops:', e);
         setTops([]);
       }
     } catch (err) {
-      setError(String(err));
+      setError(err.message || String(err));
     } finally {
       setLoading(false);
     }
@@ -470,15 +505,214 @@ export default function AdminPanel() {
 
   return (
     <div style={{ padding: 20, fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Admin Panel</h1>
-      <p>Enter your admin key to authorize create/update/delete actions (sent as x-admin-key header). Surrounding quotes will be removed automatically.</p>
-      <div style={{ marginBottom: 12 }}>
-        <input placeholder="Admin Key" value={adminKey} onChange={e => setAdminKey(e.target.value)} style={{ padding: 8, width: 360 }} />
-        <button onClick={loadAll} style={{ marginLeft: 8, padding: '8px 12px' }}>Refresh</button>
+      {/* Quick Actions Header */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05))',
+        border: '1px solid rgba(59, 130, 246, 0.2)',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '24px'
+      }}>
+        <h2 style={{ 
+          margin: '0 0 16px 0', 
+          color: '#3b82f6', 
+          fontSize: '24px', 
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          ⚡ Quick Actions
+        </h2>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '12px',
+          marginBottom: '20px'
+        }}>
+          <button 
+            onClick={() => {
+              const form = document.querySelector('form[data-form="create-product"]');
+              if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            style={{
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            📦 Add Product
+          </button>
+          
+          <button 
+            onClick={() => {
+              const form = document.querySelector('form[data-form="create-category"]');
+              if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            style={{
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            📂 Add Category
+          </button>
+          
+          <button 
+            onClick={() => {
+              const form = document.querySelector('form[data-form="create-blog"]');
+              if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            style={{
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            📰 Add Blog
+          </button>
+          
+          <button 
+            onClick={() => {
+              const form = document.querySelector('form[data-form="create-top"]');
+              if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            style={{
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            🏆 Add Top
+          </button>
+        </div>
+
+        {/* Admin Key Input */}
+        <div style={{ 
+          background: 'rgba(15, 23, 42, 0.4)',
+          border: '1px solid rgba(148, 163, 184, 0.2)',
+          borderRadius: '8px',
+          padding: '16px'
+        }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '8px', 
+            color: '#cbd5e1', 
+            fontSize: '14px',
+            fontWeight: '600'
+          }}>
+            🔑 Admin Authorization
+          </label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <input 
+              type="password"
+              placeholder="Enter admin key..." 
+              value={adminKey} 
+              onChange={e => setAdminKey(e.target.value)} 
+              style={{ 
+                flex: 1,
+                padding: '12px 16px', 
+                borderRadius: '6px',
+                border: '1px solid rgba(148, 163, 184, 0.3)',
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: '#e2e8f0',
+                fontSize: '14px'
+              }} 
+            />
+            <button 
+              onClick={loadAll} 
+              disabled={loading}
+              style={{ 
+                padding: '12px 20px',
+                background: loading ? '#6b7280' : 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              {loading ? '🔄' : '↻'} {loading ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+          {adminKey && (
+            <div style={{ 
+              marginTop: '8px', 
+              fontSize: '12px', 
+              color: '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              ✅ Key configured (quotes auto-removed)
+            </div>
+          )}
+        </div>
       </div>
 
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      {loading && <div>Loading...</div>}
+      {error && (
+        <div style={{ 
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05))',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          color: '#ef4444',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          ❌ <strong>Error:</strong> {error}
+        </div>
+      )}
 
       <section style={{ marginTop: 20 }}>
         <h2>Categories</h2>
@@ -505,7 +739,7 @@ export default function AdminPanel() {
           ))}
         </ul>
 
-        <form onSubmit={createCategory} style={{ marginTop: 12 }}>
+        <form onSubmit={createCategory} style={{ marginTop: 12 }} data-form="create-category">
           <h3>Create Category</h3>
           <input name="name" placeholder="Name" required style={{ display: 'block', marginBottom: 6 }} />
           <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6 }} />
@@ -526,7 +760,7 @@ export default function AdminPanel() {
           ))}
         </ul>
 
-          <form onSubmit={createProduct} style={{ marginTop: 12 }}>
+          <form onSubmit={createProduct} style={{ marginTop: 12 }} data-form="create-product">
           <h3>Create Product</h3>
           <input name="name" placeholder="Name" required style={{ display: 'block', marginBottom: 6 }} />
           <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6 }} />
@@ -603,7 +837,7 @@ export default function AdminPanel() {
           ))}
         </ul>
 
-        <form onSubmit={createBlog} style={{ marginTop: 12 }}>
+        <form onSubmit={createBlog} style={{ marginTop: 12 }} data-form="create-blog">
           <h3>Create Blog</h3>
           <input name="title" placeholder="Title" required style={{ display: 'block', marginBottom: 6, padding: 10, borderRadius: 8 }} />
           <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6, padding: 10, borderRadius: 8 }} />
@@ -689,7 +923,7 @@ export default function AdminPanel() {
           ))}
         </ul>
 
-        <form onSubmit={createTop} style={{ marginTop: 12 }}>
+        <form onSubmit={createTop} style={{ marginTop: 12 }} data-form="create-top">
           <h3>Create Top</h3>
           <input name="title" placeholder="Title" required style={{ display: 'block', marginBottom: 6 }} />
           <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6 }} />

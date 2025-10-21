@@ -5,7 +5,6 @@ import Image from 'next/image';
 import logoSrc from './images/N.png';
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from 'next/navigation';
-import { motion } from "framer-motion";
 import { useSession, signOut } from 'next-auth/react';
 
 const SITE_TAGLINE = 'PC Components, Laptops, Phones';
@@ -46,12 +45,14 @@ export default function Navbar() {
 
   return (
     <>
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.45 }}
+      <header
         className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 z-50 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md"
         aria-label="Main navigation"
+        style={{ 
+          opacity: mounted ? 1 : 0, 
+          transform: mounted ? 'translateY(0)' : 'translateY(-16px)',
+          transition: 'opacity 0.45s ease, transform 0.45s ease'
+        }}
       >
         <div className="bg-gradient-to-r from-[var(--purple-700)] to-[var(--purple-600)] border border-white/10">
           <div className="container flex items-center justify-between px-3 sm:px-0 py-2 sm:py-3">
@@ -183,7 +184,7 @@ export default function Navbar() {
           </nav>
           </div>
         )}
-      </motion.header>
+      </header>
     </>
   );
 }

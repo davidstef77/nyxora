@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import './Hero.css'
 
 export default function Hero({
@@ -29,30 +28,15 @@ export default function Hero({
       </div>
       <div className="hero-container">
         <div className="hero-content">
-          <motion.h1
-            className="hero-title"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <h1 className="hero-title fade-in">
             {title}
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            className="hero-subtitle"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
+          <p className="hero-subtitle fade-in" style={{ animationDelay: '0.2s' }}>
             {subtitle}
-          </motion.p>
+          </p>
 
-          <motion.div
-            className="hero-search-and-cta"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
+          <div className="hero-search-and-cta fade-in" style={{ animationDelay: '0.4s' }}>
             <form role="search" onSubmit={handleSearch} className="hero-search-form">
               <input
                 id="hero-search"
@@ -69,18 +53,18 @@ export default function Hero({
             </form>
 
             <div className="hero-cta-buttons">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <div>
                 <Link href={primaryCta.href} className="btn-primary">
                   {primaryCta.label}
                 </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              </div>
+              <div>
                 <Link href={secondaryCta.href} className="btn-secondary">
                   {secondaryCta.label}
                 </Link>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

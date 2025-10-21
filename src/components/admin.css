@@ -14,6 +14,17 @@
   --shadow-lg: 0 35px 60px -12px rgba(0, 0, 0, 0.4);
 }
 
+/* Keyframe animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Modern glass morphism admin shell */
 .admin-shell {
   display: flex;
