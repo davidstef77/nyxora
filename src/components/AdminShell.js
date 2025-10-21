@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession, signOut } from 'next-auth/react';
 import AdminList from './AdminList';
@@ -149,9 +149,9 @@ export default function AdminShell() {
     fetchStats();
   }, []);
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
+    const showToast = useCallback((message, type = 'success') => {
+      setToast({ message, type });
+    }, []);
 
   const refreshData = () => {
     setLoading(true);
