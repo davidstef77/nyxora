@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
 import './admin.css';
@@ -154,7 +154,7 @@ export default function AdminList({ section, onToast }) {
   const [editingItem, setEditingItem] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -188,13 +188,12 @@ export default function AdminList({ section, onToast }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [section, onToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { 
     load(); 
     setSearchTerm(''); // Reset search when section changes
-  }, [section]);
+  }, [section, load]);
 
   // Filter and sort data
   const filteredAndSortedData = data

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import RichTextEditor from './RichTextEditor';
 
 function sanitizeKey(v) {
@@ -201,7 +201,7 @@ export default function AdminPanel() {
     );
   };
 
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -236,12 +236,11 @@ export default function AdminPanel() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [api]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadAll();
-  }, []);
+  }, [loadAll]);
 
   async function createCategory(e) {
     e.preventDefault();

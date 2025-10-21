@@ -66,7 +66,7 @@ export default function FavoriteButton({ productSlug, size = 40 }) {
       mounted = false;
       window.removeEventListener('favorites-updated', onUpdate);
     };
-  }, [productSlug]);
+  }, [productSlug, isAuthenticated]);
 
   function toggle(e) {
     e?.preventDefault();
