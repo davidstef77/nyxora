@@ -1,5 +1,6 @@
 import connect from '../lib/db';
 import Category from '../lib/models/Category';
+import { revalidatePath } from 'next/cache';
 
 export async function GET() {
   await connect();
@@ -17,6 +18,11 @@ export async function POST(request) {
     await connect();
     const body = await request.json();
     const cat = await Category.create(body);
+    
+    // Invalidează cache-ul homepage-ului și a paginii de categorii
+    revalidatePath('/');
+    revalidatePath('/categories/[slug]', 'page');
+    
     return new Response(JSON.stringify(cat), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 });

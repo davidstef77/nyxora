@@ -1,5 +1,6 @@
 import connect from '../lib/db';
 import Product from '../lib/models/Product';
+import { revalidatePath } from 'next/cache';
 
 /**
  * GET: list products, optionally filtered by ?category=slug
@@ -69,6 +70,10 @@ export async function POST(request) {
     const prod = await Product.create(productDoc);
 
     // manufacturer price handling removed
+    
+    // Invalidează cache-ul homepage-ului pentru a afișa noul produs
+    revalidatePath('/');
+    revalidatePath('/products');
 
     return new Response(JSON.stringify(prod), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {

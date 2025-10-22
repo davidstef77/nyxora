@@ -1,5 +1,6 @@
 import connect from '../../lib/db';
 import Category from '../../lib/models/Category';
+import { revalidatePath } from 'next/cache';
 
 function sanitizeKey(v) {
   if (!v) return '';
@@ -30,6 +31,11 @@ export async function PUT(request, { params }) {
   const p = await params;
   const updated = await Category.findOneAndUpdate({ slug: p.slug }, data, { new: true }).lean();
     if (!updated) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+    
+    // Invalidează cache-ul homepage-ului și a paginii categoriei
+    revalidatePath('/');
+    revalidatePath(`/categories/${p.slug}`);
+    
     return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
@@ -50,6 +56,11 @@ export async function DELETE(request, { params }) {
   const p = await params;
   const res = await Category.findOneAndDelete({ slug: p.slug });
     if (!res) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
+    
+    // Invalidează cache-ul homepage-ului și a paginii categoriei
+    revalidatePath('/');
+    revalidatePath(`/categories/${p.slug}`);
+    
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err) {
     // include the message for easier debugging in development

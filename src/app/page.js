@@ -6,6 +6,9 @@ import connect from './api/lib/db';
 import Product from './api/lib/models/Product';
 import Category from './api/lib/models/Category';
 
+// Revalidează homepage-ul la fiecare 60 secunde
+export const revalidate = 60;
+
 async function getData() {
   try {
     await connect();
