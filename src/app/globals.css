@@ -19,12 +19,46 @@
 
 /* navbar offset: space to reserve at top of pages for the fixed navbar */
 :root {
-  --navbar-offset: 4rem; /* mobile: ~64px */
+  --navbar-offset: 5rem; /* mobile: ~80px (navbar + spacing) */
 }
 
 @media (min-width: 640px) {
   :root {
-    --navbar-offset: 5rem; /* desktop: ~80px */
+    --navbar-offset: 6rem; /* desktop: ~96px */
+  }
+}
+
+/* Slide down animation for mobile menu */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in animation for overlay */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes slideDown {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 
@@ -39,6 +73,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeSpeed;
+}
+
+/* Ensure all pages start after the navbar */
+main > * {
+  padding-top: var(--navbar-offset);
+}
+
+/* Exception for pages that handle their own spacing */
+main > .no-navbar-offset {
+  padding-top: 0;
 }
 
 /* Performance: Reduce animations and transitions on low-end devices */

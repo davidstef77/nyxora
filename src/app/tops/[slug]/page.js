@@ -4,6 +4,10 @@ import Product from '../../api/lib/models/Product';
 import SmartImage from '../../../components/SmartImage';
 import { Metadata } from 'next';
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
 export async function generateMetadata({ params }) {
   try {
     await connect();

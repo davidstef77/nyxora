@@ -163,8 +163,9 @@ export default function RootLayout({ children }) {
               <Navbar />
             </Suspense>
             <main style={{ 
-              flex: 1, 
-              paddingTop: 'var(--navbar-offset)',
+              flex: 1,
+              width: '100%',
+              position: 'relative',
               contain: 'layout' // Performance: Containment for main content
             }}>
               {children}

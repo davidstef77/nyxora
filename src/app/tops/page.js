@@ -2,6 +2,10 @@ import Link from 'next/link';
 import connect from '../api/lib/db';
 import Top from '../api/lib/models/Top';
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
 export default async function TopsListPage() {
   try {
     await connect();

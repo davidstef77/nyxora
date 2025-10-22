@@ -2,6 +2,10 @@ import Link from 'next/link';
 import connect from '../api/lib/db';
 import Blog from '../api/lib/models/Blog';
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Blog - Articole Tech și Recenzii | Nyxora',
   description: 'Citește articolele noastre despre tehnologie, recenzii de produse, ghiduri și sfaturi pentru componente PC, laptopuri și gadget-uri.',

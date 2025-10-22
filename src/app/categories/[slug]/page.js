@@ -1,25 +1,34 @@
 import Image from '../../../components/SmartImage';
 import Link from 'next/link';
 import ProductsForCategory from '../../../components/ProductsForCategory';
+import connect from '../../api/lib/db';
+import Category from '../../api/lib/models/Category';
 
-async function getData() {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
-  const url = new URL('/api/data', base.startsWith('http') ? base : `https://${base}`);
-  const res = await fetch(url.toString(), { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch');
-  return res.json();
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+async function getData(slug) {
+  try {
+    await connect();
+    const category = await Category.findOne({ slug }).lean();
+    return { category };
+  } catch (err) {
+    console.error('[categories/[slug]] getData error', err);
+    return { category: null, error: err.message };
+  }
 }
 
 export default async function CategoryPage({ params }) {
   try {
-  const { categories, featuredProducts } = await getData();
     const p = await params;
-    const category = categories.find((c) => c.slug === p.slug);
+    const { category, error } = await getData(p.slug);
 
-    if (!category) {
+    if (error || !category) {
       return (
-    <div className="container p-8">
+        <div className="container p-8">
           <h1 className="text-2xl font-semibold">Categorie negăsită</h1>
+          {error && <p className="text-slate-400 mt-2">Eroare: {error}</p>}
           <Link href="/" className="text-cyan-400 mt-4 block">Înapoi la listă</Link>
         </div>
       );

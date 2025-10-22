@@ -29,11 +29,34 @@ export default function Navbar() {
     } catch (err) {
       setIsAdminPath(false);
     }
+    // Închide meniul mobil când schimbi pagina
+    setShowMobileMenu(false);
   }, [pathname]);
 
   useEffect(() => {
     if (showSearch && inputRef.current) inputRef.current.focus();
   }, [showSearch]);
+
+  // Închide meniul mobil când dai click în afara lui
+  useEffect(() => {
+    if (!showMobileMenu) return;
+    
+    const handleClickOutside = (e) => {
+      if (e.target.closest('.mobile-menu-container') || e.target.closest('.mobile-menu-toggle')) {
+        return;
+      }
+      setShowMobileMenu(false);
+    };
+    
+    // Previne scroll-ul când meniul este deschis
+    document.body.style.overflow = 'hidden';
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.body.style.overflow = '';
+    };
+  }, [showMobileMenu]);
 
   function submitSearch(e) {
     e?.preventDefault();
@@ -45,6 +68,15 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Overlay pentru fundal când meniul mobil este deschis */}
+      {showMobileMenu && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 sm:hidden backdrop-blur-sm"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+          onClick={() => setShowMobileMenu(false)}
+        />
+      )}
+      
       <header
         className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 z-50 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md"
         aria-label="Main navigation"
@@ -81,10 +113,22 @@ export default function Navbar() {
 
             {/* Mobile menu toggle (visible on small screens) */}
             <div className="sm:hidden ml-3">
-              <button onClick={() => setShowMobileMenu(!showMobileMenu)} aria-label="Open menu" className="inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20" style={{ color: '#fff' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+              <button 
+                onClick={() => setShowMobileMenu(!showMobileMenu)} 
+                aria-label={showMobileMenu ? "Close menu" : "Open menu"}
+                aria-expanded={showMobileMenu}
+                className="mobile-menu-toggle inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors" 
+                style={{ color: '#fff' }}
+              >
+                {showMobileMenu ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
               </button>
             </div>
 
@@ -176,12 +220,29 @@ export default function Navbar() {
         </div>
         {/* Mobile dropdown menu */}
         {showMobileMenu && (
-          <div className="fixed left-2 right-2 top-20 z-40 sm:hidden bg-[rgba(17,24,39,0.85)] rounded-2xl shadow-lg p-3 backdrop-blur-md">
-          <nav className="flex flex-col gap-2">
-            {[{ href: '/products', label: 'Produse' }, { href: '/blog', label: 'Blog' }, { href: '/tops', label: 'Topuri' }].map(l => (
-              <Link key={l.href} href={l.href} className="text-white px-3 py-2 rounded hover:bg-white/5" style={{ color: '#fff' }}>{l.label}</Link>
-            ))}
-          </nav>
+          <div 
+            className="mobile-menu-container fixed left-2 right-2 top-[4.5rem] z-40 sm:hidden bg-gradient-to-br from-[rgba(17,24,39,0.95)] to-[rgba(15,23,42,0.95)] rounded-2xl shadow-2xl p-4 backdrop-blur-lg border border-white/10"
+            style={{
+              animation: 'slideDown 0.2s ease-out'
+            }}
+          >
+            <nav className="flex flex-col gap-2">
+              {[
+                { href: '/products', label: 'Produse' }, 
+                { href: '/blog', label: 'Blog' }, 
+                { href: '/tops', label: 'Topuri' }
+              ].map(l => (
+                <Link 
+                  key={l.href} 
+                  href={l.href} 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="text-white px-4 py-3 rounded-xl hover:bg-white/10 transition-colors font-medium active:scale-95 transform" 
+                  style={{ color: '#fff' }}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         )}
       </header>

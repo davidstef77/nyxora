@@ -4,6 +4,10 @@ import connect from '../../api/lib/db';
 import Blog from '../../api/lib/models/Blog';
 import Product from '../../api/lib/models/Product';
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
 export async function generateMetadata({ params }) {
   try {
     const slugParam = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;

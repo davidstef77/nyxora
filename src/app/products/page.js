@@ -6,6 +6,10 @@ import Product from '../api/lib/models/Product'
 import Category from '../api/lib/models/Category'
 // Manufacturer references removed — brand data no longer displayed
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 30;
+
 export const metadata = {
   title: 'Produse - Recenzii și Comparații | Nyxora',
   description: 'Descoperă cele mai bune produse tech pe Nyxora. Recenzii detaliate, comparații de preț și recomandări pentru componente PC, laptopuri, periferice și multe altele.',

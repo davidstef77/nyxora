@@ -9,6 +9,9 @@ import Category from './api/lib/models/Category';
 // Revalidează homepage-ul la fiecare 60 secunde
 export const revalidate = 60;
 
+// Forțează rendering dinamic (nu static) pentru a evita probleme de cache
+export const dynamic = 'force-dynamic';
+
 async function getData() {
   try {
     await connect();

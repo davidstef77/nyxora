@@ -8,6 +8,10 @@ import ProductTabs from '../../../components/ProductTabs';
 import FavoriteButton from '../../../components/FavoriteButton';
 import ScrollToTop from '../../../components/ScrollToTop';
 
+// Forțează rendering dinamic
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
 export async function generateMetadata({ params }) {
   try {
     const p = await params; // ensure dynamic params are resolved
