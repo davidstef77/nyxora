@@ -6,70 +6,120 @@ import logoSrc from './images/N.png';
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
+import './Navbar.css';
 
 const SITE_TAGLINE = 'PC Components, Laptops, Phones';
+
+// Linkurile de navigare pentru meniu
+const NAVIGATION_LINKS = [
+  { href: '/products', label: 'Produse' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/tops', label: 'Topuri' }
+];
 
 export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQ, setSearchQ] = useState('');
-  // Resetăm starea pentru meniul mobil
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const mobileMenuRef = useRef(null); // Ref pentru meniul mobil
+  // Stare pentru meniul mobil
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Referințe pentru DOM
+  const mobileMenuRef = useRef(null);
+  const mobileButtonRef = useRef(null);
   const inputRef = useRef(null);
+  
+  // Hooks
   const router = useRouter();
   const { data: session, status } = useSession();
   const pathname = usePathname();
-  // Avoid using pathname/session directly during the first render to keep
-  // server and client markup identical (prevents hydration mismatches).
+  
+  // State pentru a evita probleme de hydration
   const [mounted, setMounted] = useState(false);
   const [isAdminPath, setIsAdminPath] = useState(false);
 
+  // Efect pentru inițializare după ce componenta a fost montată - îmbunătățit pentru a asigura montarea corectă
   useEffect(() => {
-    setMounted(true);
-    try {
-      setIsAdminPath(typeof pathname === 'string' && pathname.startsWith('/admin'));
-    } catch (err) {
-      setIsAdminPath(false);
-    }
-    // Închide meniul mobil când schimbi pagina
-    setShowMobileMenu(false);
+    // Asigură-te că starea mounted este actualizată doar după ce componenta este cu adevărat montată în DOM
+    const timer = setTimeout(() => {
+      setMounted(true);
+      try {
+        setIsAdminPath(typeof pathname === 'string' && pathname.startsWith('/admin'));
+      } catch (err) {
+        setIsAdminPath(false);
+      }
+    }, 10); // Un mic delay pentru a asigura renderizarea completă
+    
+    // Cleanup la unmount
+    return () => clearTimeout(timer);
   }, [pathname]);
 
+  // Efect pentru a închide meniul când se schimbă pagina
   useEffect(() => {
-    if (showSearch && inputRef.current) inputRef.current.focus();
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  }, [pathname]);
+
+  // Efect pentru a focaliza input-ul de căutare
+  useEffect(() => {
+    if (showSearch && inputRef.current) {
+      inputRef.current.focus();
+    }
   }, [showSearch]);
 
-  // Gestionează închiderea meniului mobil și prevenirea scroll-ului
+  // Efect îmbunătățit pentru a gestiona scroll lock și click outside pentru meniul mobil
   useEffect(() => {
-    // Dacă meniul nu este afișat, nu facem nimic
-    if (!showMobileMenu) return;
-    
-    // Previne scroll-ul când meniul este deschis
-    document.body.style.overflow = 'hidden';
-    
-    // Funcția pentru click în afara meniului
-    const handleClickOutside = (e) => {
-      // Nu închide dacă click-ul este pe meniul însuși sau pe butonul de toggle
-      if (e.target.closest('.mobile-menu-container') || e.target.closest('.mobile-menu-toggle')) {
-        return;
-      }
-      
-      // Închide meniul pentru orice alt click
-      setShowMobileMenu(false);
-    };
-    
-    // Adaugă event listener cu delay
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
-    }, 200); // Delay mai mare pentru a evita conflicte
-    
-    // Cleanup la dismount sau când meniul se închide
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    // Adaugă sau elimină lock pe scroll în funcție de starea meniului
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
       document.body.style.overflow = '';
-      clearTimeout(timer);
+    }
+    
+    // Funcția pentru a verifica dacă un click/tap este în afara meniului
+    const handleOutsideEvent = (event) => {
+      // Nu face nimic dacă meniul este închis
+      if (!mobileMenuOpen) return;
+      
+      // Verifică dacă click-ul/tap-ul este în afara meniului și a butonului
+      if (
+        mobileMenuRef.current && 
+        !mobileMenuRef.current.contains(event.target) &&
+        mobileButtonRef.current &&
+        !mobileButtonRef.current.contains(event.target)
+      ) {
+        // Prevent default și stop propagation pentru a asigura 
+        // că evenimentul nu declanșează alte acțiuni
+        event.preventDefault();
+        
+        // Închide meniul
+        setMobileMenuOpen(false);
+      }
     };
-  }, [showMobileMenu]);
+    
+    // Adaugă event listeners doar când meniul e deschis
+    if (mobileMenuOpen) {
+      // Utilizăm atât mousedown cât și touchstart pentru suport complet pe dispozitive touch
+      // Folosim un mic timeout pentru a evita ca event handler-ul să prindă
+      // chiar click-ul/tap-ul care a deschis meniul
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleOutsideEvent);
+        document.addEventListener('touchstart', handleOutsideEvent, { passive: false });
+      }, 100);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('mousedown', handleOutsideEvent);
+        document.removeEventListener('touchstart', handleOutsideEvent);
+      };
+    }
+    
+    // Cleanup când meniul e închis sau la unmount
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideEvent);
+      document.removeEventListener('touchstart', handleOutsideEvent);
+    };
+  }, [mobileMenuOpen]);
 
   function submitSearch(e) {
     e?.preventDefault();
@@ -81,11 +131,22 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Overlay pentru fundal când meniul mobil este deschis */}
-      {showMobileMenu && (
+      {/* Overlay pentru fundal când meniul mobil este deschis - optimizat pentru touch */}
+      {mobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 sm:hidden backdrop-blur-sm"
           style={{ animation: 'fadeIn 0.2s ease-out' }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMobileMenuOpen(false);
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMobileMenuOpen(false);
+          }}
+          aria-hidden="true"
         />
       )}
       
@@ -112,40 +173,47 @@ export default function Navbar() {
             </Link>
 
             {/* Primary nav links (visible on md+) */}
-            {/** Render links from a static constant to guarantee identical server/client HTML */}
             <nav className="hidden sm:flex items-center gap-4 ml-6">
-              {[
-                { href: '/products', label: 'Produse' },
-                { href: '/blog', label: 'Blog' },
-                { href: '/tops', label: 'Topuri' }
-              ].map(link => (
-                <Link key={link.href} href={link.href} className="text-white hover:text-white transition-colors" style={{ color: '#fff' }}>{link.label}</Link>
+              {NAVIGATION_LINKS.map(link => (
+                <Link 
+                  key={link.href} 
+                  href={link.href} 
+                  className="text-white hover:text-white transition-colors" 
+                  style={{ color: '#fff' }}
+                >
+                  {link.label}
+                </Link>
               ))}
             </nav>
 
-            {/* Mobile menu toggle (visible on small screens) */}
+            {/* Mobile menu toggle (visible on small screens) - îmbunătățit pentru dispozitive touch */}
             <div className="sm:hidden ml-3">
               <button 
                 type="button"
+                ref={mobileButtonRef}
                 onClick={(e) => {
+                  // Previne propagarea evenimentului pentru a evita conflicte cu alte clickuri
+                  e.stopPropagation();
+                  // Toggleaza starea meniului
+                  setMobileMenuOpen(prev => !prev);
+                }}
+                onTouchEnd={(e) => {
+                  // Previne comportamentul implicit pentru a asigura funcționarea pe touch devices
                   e.preventDefault();
                   e.stopPropagation();
-                  // Toggle menu cu timeout pentru a evita conflictul cu click outside
-                  setTimeout(() => {
-                    setShowMobileMenu(prev => !prev);
-                  }, 10);
-                }} 
-                aria-label={showMobileMenu ? "Close menu" : "Open menu"}
-                aria-expanded={showMobileMenu}
-                className="mobile-menu-toggle inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors" 
-                style={{ color: '#fff' }}
+                }}
+                aria-label={mobileMenuOpen ? "Închide meniul" : "Deschide meniul"} 
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                className="mobile-menu-toggle inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors"
+                style={{ minHeight: '44px', minWidth: '44px' }} // Asigură o zonă de atingere suficient de mare
               >
-                {showMobileMenu ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                {mobileMenuOpen ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 )}
@@ -238,31 +306,41 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-        {/* Mobile dropdown menu */}
-        {showMobileMenu && (
+        
+        {/* Mobile dropdown menu - complet refăcut și optimizat pentru touch */}
+        {mobileMenuOpen && (
           <div 
+            id="mobile-menu"
+            ref={mobileMenuRef}
             className="mobile-menu-container fixed left-2 right-2 top-[4.5rem] z-40 sm:hidden bg-gradient-to-br from-[rgba(17,24,39,0.95)] to-[rgba(15,23,42,0.95)] rounded-2xl shadow-2xl p-4 backdrop-blur-lg border border-white/10"
             style={{
-              animation: 'slideDown 0.2s ease-out',
+              animation: 'slideDown 0.25s ease-out',
               maxHeight: '80vh',
               overflowY: 'auto'
             }}
-            onClick={(e) => e.stopPropagation()} // Previne propagarea care ar putea închide meniul
+            onClick={(e) => {
+              // Previne propagarea evenimentului
+              e.stopPropagation();
+            }}
           >
-            <nav className="flex flex-col gap-2">
-              {[
-                { href: '/products', label: 'Produse' }, 
-                { href: '/blog', label: 'Blog' }, 
-                { href: '/tops', label: 'Topuri' }
-              ].map(l => (
+            <nav className="flex flex-col gap-3">
+              {NAVIGATION_LINKS.map(link => (
                 <Link 
-                  key={l.href} 
-                  href={l.href} 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="text-white px-4 py-3 rounded-xl hover:bg-white/10 transition-colors font-medium active:scale-95 transform" 
-                  style={{ color: '#fff' }}
+                  key={link.href} 
+                  href={link.href} 
+                  onClick={(e) => {
+                    // Previne propagare pentru a asigura că link-ul funcționează
+                    e.stopPropagation();
+                    // Închide meniul după click
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-white px-4 py-4 rounded-xl hover:bg-white/10 transition-colors font-medium active:scale-95 transform flex items-center"
+                  style={{ minHeight: '50px' }} // Asigură zonă de atingere mare
                 >
-                  {l.label}
+                  <span className="text-base">{link.label}</span>
+                  <svg className="w-5 h-5 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               ))}
             </nav>

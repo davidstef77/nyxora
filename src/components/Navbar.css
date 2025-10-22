@@ -1,0 +1,58 @@
+/* Navbar.css - Styling specific for Navbar component */
+
+/* Mobile menu container */
+.mobile-menu-container {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transform-origin: top center;
+}
+
+/* Mobile menu items */
+.mobile-menu-container a {
+  position: relative;
+  color: #fff !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Active state for mobile links */
+.mobile-menu-container a:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Improved touch target for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .mobile-menu-toggle,
+  .mobile-menu-container a {
+    min-height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Prevent text selection on mobile */
+  .mobile-menu-container * {
+    user-select: none;
+  }
+}
+
+/* Fix for iOS Safari - prevent zooming on double-tap */
+@media screen and (-webkit-min-device-pixel-ratio: 0) { 
+  .mobile-menu-toggle,
+  .mobile-menu-container a {
+    font-size: 16px;
+  }
+}
+
+/* Improve clickability for mobile menu navigation links */
+.mobile-menu-container nav {
+  touch-action: pan-y;
+}
+
+.mobile-menu-container a svg {
+  flex-shrink: 0;
+}
+
+/* Animation for when links are tapped */
+.mobile-menu-container a:active svg {
+  transform: translateX(3px);
+  transition: transform 0.2s ease;
+}
