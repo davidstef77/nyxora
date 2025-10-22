@@ -142,7 +142,7 @@ export default async function ProductsPage({ searchParams }) {
             {products.length === 0 ? (
               <div className="panel p-6 text-center">
                 <p className="text-slate-400 mb-2">Nu există produse care să corespundă căutării.</p>
-                <Link href="/products" className="text-cyan-400 hover:text-cyan-300 transition-colors">Vezi toate produsele</Link>
+                <Link href="/products" className="text-white hover:text-slate-200 transition-colors">Vezi toate produsele</Link>
               </div>
             ) : (
               <div className="mobile-grid">

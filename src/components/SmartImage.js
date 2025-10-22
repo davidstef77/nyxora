@@ -33,7 +33,7 @@ function SmartImage({
   style = {}, 
   fill = false, 
   priority = false,
-  loading = 'lazy',
+  loading,
   quality = 75,
   placeholder = 'blur',
   blurDataURL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
@@ -41,6 +41,9 @@ function SmartImage({
 }) {
   const [errored, setErrored] = useState(false);
   const normalized = normalizeSrc(src);
+
+  // Dacă nu este specificat loading și avem priority, folosește 'eager'
+  const effectiveLoading = loading || (priority ? 'eager' : 'lazy');
 
   // simple placeholder when no src provided or when load error occurred
   const placeholderSrc = '/placeholder-product.svg';
@@ -85,7 +88,7 @@ function SmartImage({
           style={{ objectFit: 'cover', ...style }}
           onError={() => setErrored(true)}
           unoptimized={true}
-          loading={loading}
+          loading={effectiveLoading}
           priority={priority}
           quality={quality}
           {...rest}
@@ -103,7 +106,7 @@ function SmartImage({
         style={{ objectFit: 'cover', ...style }}
         onError={() => setErrored(true)}
         unoptimized={true}
-        loading={loading}
+        loading={effectiveLoading}
         priority={priority}
         quality={quality}
         {...rest}
@@ -121,7 +124,7 @@ function SmartImage({
         className={className} 
         style={{ objectFit: 'cover', ...style }}
         onError={() => setErrored(true)}
-        loading={loading}
+        loading={effectiveLoading}
         priority={priority}
         quality={quality}
         placeholder={placeholder}
@@ -140,7 +143,7 @@ function SmartImage({
       className={className} 
       style={{ objectFit: 'cover', ...style }}
       onError={() => setErrored(true)}
-      loading={loading}
+      loading={effectiveLoading}
       priority={priority}
       quality={quality}
       placeholder={placeholder}

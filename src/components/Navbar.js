@@ -12,7 +12,9 @@ const SITE_TAGLINE = 'PC Components, Laptops, Phones';
 export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQ, setSearchQ] = useState('');
+  // Resetăm starea pentru meniul mobil
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const mobileMenuRef = useRef(null); // Ref pentru meniul mobil
   const inputRef = useRef(null);
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -37,24 +39,35 @@ export default function Navbar() {
     if (showSearch && inputRef.current) inputRef.current.focus();
   }, [showSearch]);
 
-  // Închide meniul mobil când dai click în afara lui
+  // Gestionează închiderea meniului mobil și prevenirea scroll-ului
   useEffect(() => {
+    // Dacă meniul nu este afișat, nu facem nimic
     if (!showMobileMenu) return;
-    
-    const handleClickOutside = (e) => {
-      if (e.target.closest('.mobile-menu-container') || e.target.closest('.mobile-menu-toggle')) {
-        return;
-      }
-      setShowMobileMenu(false);
-    };
     
     // Previne scroll-ul când meniul este deschis
     document.body.style.overflow = 'hidden';
     
-    document.addEventListener('click', handleClickOutside);
+    // Funcția pentru click în afara meniului
+    const handleClickOutside = (e) => {
+      // Nu închide dacă click-ul este pe meniul însuși sau pe butonul de toggle
+      if (e.target.closest('.mobile-menu-container') || e.target.closest('.mobile-menu-toggle')) {
+        return;
+      }
+      
+      // Închide meniul pentru orice alt click
+      setShowMobileMenu(false);
+    };
+    
+    // Adaugă event listener cu delay
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 200); // Delay mai mare pentru a evita conflicte
+    
+    // Cleanup la dismount sau când meniul se închide
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = '';
+      clearTimeout(timer);
     };
   }, [showMobileMenu]);
 
@@ -73,7 +86,6 @@ export default function Navbar() {
         <div 
           className="fixed inset-0 bg-black/50 z-30 sm:hidden backdrop-blur-sm"
           style={{ animation: 'fadeIn 0.2s ease-out' }}
-          onClick={() => setShowMobileMenu(false)}
         />
       )}
       
@@ -114,7 +126,15 @@ export default function Navbar() {
             {/* Mobile menu toggle (visible on small screens) */}
             <div className="sm:hidden ml-3">
               <button 
-                onClick={() => setShowMobileMenu(!showMobileMenu)} 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Toggle menu cu timeout pentru a evita conflictul cu click outside
+                  setTimeout(() => {
+                    setShowMobileMenu(prev => !prev);
+                  }, 10);
+                }} 
                 aria-label={showMobileMenu ? "Close menu" : "Open menu"}
                 aria-expanded={showMobileMenu}
                 className="mobile-menu-toggle inline-flex items-center justify-center p-2 rounded-md text-white bg-white/10 hover:bg-white/20 transition-colors" 
@@ -223,8 +243,11 @@ export default function Navbar() {
           <div 
             className="mobile-menu-container fixed left-2 right-2 top-[4.5rem] z-40 sm:hidden bg-gradient-to-br from-[rgba(17,24,39,0.95)] to-[rgba(15,23,42,0.95)] rounded-2xl shadow-2xl p-4 backdrop-blur-lg border border-white/10"
             style={{
-              animation: 'slideDown 0.2s ease-out'
+              animation: 'slideDown 0.2s ease-out',
+              maxHeight: '80vh',
+              overflowY: 'auto'
             }}
+            onClick={(e) => e.stopPropagation()} // Previne propagarea care ar putea închide meniul
           >
             <nav className="flex flex-col gap-2">
               {[

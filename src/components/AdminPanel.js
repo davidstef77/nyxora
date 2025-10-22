@@ -720,20 +720,54 @@ export default function AdminPanel() {
           {categories.map(c => (
             <li key={c._id} style={{ marginBottom: 6 }}>
               {editingCategory && editingCategory._id === c._id ? (
-                <form onSubmit={saveCategoryEdit} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                  <input name="name" defaultValue={c.name} style={{ padding: 6 }} />
-                  <input name="slug" defaultValue={c.slug} style={{ padding: 6 }} />
-                  <input name="icon" defaultValue={c.icon || ''} style={{ padding: 6 }} />
-                  <input name="description" defaultValue={c.description || ''} style={{ padding: 6 }} />
-                  <button type="submit" style={{ marginLeft: 8 }}>Save</button>
-                  <button type="button" onClick={() => setEditingCategory(null)} style={{ marginLeft: 6 }}>Cancel</button>
+                <form onSubmit={saveCategoryEdit} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: '#f5f5f5', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input name="name" defaultValue={c.name} placeholder="Nume" style={{ padding: 6, flex: 1 }} />
+                    <input name="slug" defaultValue={c.slug} placeholder="Slug" style={{ padding: 6, flex: 1 }} />
+                  </div>
+                  <input 
+                    name="icon" 
+                    defaultValue={c.icon || ''} 
+                    placeholder="URL complet imagine header" 
+                    style={{ padding: 6, width: '100%' }} 
+                  />
+                  <small style={{ color: '#666', marginTop: -4 }}>
+                    💡 URL complet pentru imaginea header-ului (ex: https://example.com/image.jpg)
+                  </small>
+                  <textarea 
+                    name="description" 
+                    defaultValue={c.description || ''} 
+                    placeholder="Descriere" 
+                    style={{ padding: 6, width: '100%', minHeight: 60 }} 
+                  />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button type="submit" style={{ padding: '6px 12px' }}>Save</button>
+                    <button type="button" onClick={() => setEditingCategory(null)} style={{ padding: '6px 12px' }}>Cancel</button>
+                  </div>
                 </form>
               ) : (
-                <>
-                  <strong>{c.name}</strong> — {c.slug}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {c.icon && (
+                    <img 
+                      src={c.icon} 
+                      alt={c.name} 
+                      style={{ 
+                        width: 40, 
+                        height: 40, 
+                        objectFit: 'cover', 
+                        borderRadius: 4,
+                        border: '1px solid #ddd'
+                      }}
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <strong>{c.name}</strong> — {c.slug}
+                    {c.icon && <div style={{ fontSize: '0.8em', color: '#666', marginTop: 2 }}>Icon: {c.icon.substring(0, 50)}...</div>}
+                  </div>
                   <button onClick={() => setEditingCategory({ ...c, originalSlug: c.slug })} style={{ marginLeft: 8 }}>Edit</button>
                   <button onClick={() => deleteCategory(c.slug)} style={{ marginLeft: 8 }}>Delete</button>
-                </>
+                </div>
               )}
             </li>
           ))}
@@ -741,10 +775,13 @@ export default function AdminPanel() {
 
         <form onSubmit={createCategory} style={{ marginTop: 12 }} data-form="create-category">
           <h3>Create Category</h3>
-          <input name="name" placeholder="Name" required style={{ display: 'block', marginBottom: 6 }} />
-          <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6 }} />
-          <input name="icon" placeholder="icon url or name" style={{ display: 'block', marginBottom: 6 }} />
-          <textarea name="description" placeholder="description" style={{ display: 'block', marginBottom: 6 }} />
+          <input name="name" placeholder="Name" required style={{ display: 'block', marginBottom: 6, width: '100%', maxWidth: 400 }} />
+          <input name="slug" placeholder="slug" required style={{ display: 'block', marginBottom: 6, width: '100%', maxWidth: 400 }} />
+          <input name="icon" placeholder="URL complet imagine header (ex: https://...)" style={{ display: 'block', marginBottom: 6, width: '100%', maxWidth: 400 }} />
+          <small style={{ display: 'block', marginBottom: 8, color: '#888' }}>
+            💡 Pentru icon: pune URL-ul complet al imaginii pentru header-ul categoriei (ex: https://example.com/image.jpg)
+          </small>
+          <textarea name="description" placeholder="description" style={{ display: 'block', marginBottom: 6, width: '100%', maxWidth: 400 }} />
           <button type="submit">Create</button>
         </form>
       </section>

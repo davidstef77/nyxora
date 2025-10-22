@@ -98,7 +98,7 @@ export default async function ProductPage({ params }) {
       return (
   <div className="container p-8">
           <h1 className="text-2xl font-semibold">Produs negăsit</h1>
-          <Link href="/" className="text-cyan-400 mt-4 block">Înapoi la listă</Link>
+          <Link href="/" className="text-white hover:text-slate-200 mt-4 block">Înapoi la listă</Link>
         </div>
       );
     }
