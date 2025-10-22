@@ -1,0 +1,144 @@
+/* Categories specific styles */
+
+/* Enhance the header image */
+.category-header-image {
+  transform: scale(1.01);
+  transition: transform 10s ease-out;
+}
+
+.category-header-image:hover {
+  transform: scale(1.1);
+}
+
+/* Shimmer effect for the category header */
+.category-title-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-title-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -150%;
+  bottom: 0;
+  left: -150%;
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.05) 25%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    rgba(255, 255, 255, 0.05) 75%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  animation: shimmer 5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(25deg);
+  }
+}
+
+/* Enhanced product card hover effects */
+.product-card {
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.product-card .product-image {
+  transition: transform 0.8s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.1);
+}
+
+.product-card .quick-view-button {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .quick-view-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Breadcrumb enhancements */
+.breadcrumb-item {
+  position: relative;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  transform: rotate(45deg);
+  right: -12px;
+  top: 50%;
+  margin-top: -4px;
+  opacity: 0.5;
+}
+
+/* Enhanced animation for loading state */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive container for product cards */
+@media (min-width: 640px) {
+  .category-products-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-products-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Enhanced hover effects for back button */
+.back-button {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.back-button::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--cyan-400, #34d399);
+  transition: width 0.3s ease;
+}
+
+.back-button:hover::after {
+  width: 100%;
+}
