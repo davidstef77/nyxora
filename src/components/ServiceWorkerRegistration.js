@@ -12,7 +12,9 @@ export default function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register('/sw.js')
         .then(registration => {
-          console.log('[SW] Service Worker registered successfully:', registration.scope);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[SW] Service Worker registered successfully:', registration.scope);
+          }
           
           // Check for updates
           registration.addEventListener('updatefound', () => {
@@ -43,12 +45,16 @@ export default function ServiceWorkerRegistration() {
 
       // Handle online/offline status
       const handleOnline = () => {
-        console.log('[SW] App is online');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[SW] App is online');
+        }
         // Optionally show notification
       };
 
       const handleOffline = () => {
-        console.log('[SW] App is offline');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[SW] App is offline');
+        }
         // Optionally show notification
       };
 

@@ -23,18 +23,20 @@ function ProductInsertControls({ products = [], onInsert }) {
   ), [products]);
 
   const handleInsert = useCallback(() => {
-    console.log('Product insert button clicked, selectedSlug:', selectedSlug);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Product insert button clicked, selectedSlug:', selectedSlug);
+    }
     if (!selectedSlug) {
-      console.log('No selected slug, returning');
+      if (process.env.NODE_ENV !== 'production') console.log('No selected slug, returning');
       return;
     }
     const product = products.find((p) => p.slug === selectedSlug);
-    console.log('Found product:', product);
+    if (process.env.NODE_ENV !== 'production') console.log('Found product:', product);
     if (!product) {
-      console.log('Product not found, returning');
+      if (process.env.NODE_ENV !== 'production') console.log('Product not found, returning');
       return;
     }
-    console.log('Calling onInsert with product:', product);
+    if (process.env.NODE_ENV !== 'production') console.log('Calling onInsert with product:', product);
     onInsert?.(product);
   }, [selectedSlug, onInsert, products]);
 

@@ -24,11 +24,11 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
-        console.log('[SW] Caching static assets');
+        // console.log('[SW] Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Static assets cached');
+        // console.log('[SW] Static assets cached');
         return self.skipWaiting();
       })
       .catch(err => {
@@ -45,14 +45,14 @@ self.addEventListener('activate', event => {
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-              console.log('[SW] Deleting old cache:', cacheName);
+              // console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        console.log('[SW] Service worker activated');
+        // console.log('[SW] Service worker activated');
         return self.clients.claim();
       })
   );
@@ -126,7 +126,7 @@ async function handleAPIRequest(request) {
     // Fallback to cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
-      console.log('[SW] Serving API from cache:', request.url);
+      // console.log('[SW] Serving API from cache:', request.url);
       return cachedResponse;
     }
     throw error;
@@ -187,7 +187,7 @@ self.addEventListener('sync', event => {
 
 async function retryFailedRequests() {
   // Implementation for retrying failed requests
-  console.log('[SW] Retrying failed requests');
+  // console.log('[SW] Retrying failed requests');
 }
 
 // Message handling

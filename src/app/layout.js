@@ -138,11 +138,12 @@ export default function RootLayout({ children }) {
             if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('[SW] Service Worker registered:', registration.scope);
+                  .then(function(/* registration */) {
+                    // service worker registered (production: suppressed debug logs)
                   })
                   .catch(function(error) {
-                    console.log('[SW] Service Worker registration failed:', error);
+                    // registration failed - keep an error log in dev builds only
+                    try { if (process && process.env && process.env.NODE_ENV !== 'production') console.log('[SW] Service Worker registration failed:', error); } catch (e) {}
                   });
               });
             }

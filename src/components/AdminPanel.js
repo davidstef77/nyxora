@@ -83,18 +83,18 @@ export default function AdminPanel() {
   const api = useApi(adminKey);
 
   function addBlogProductSlug(slug, { editing = false } = {}) {
-    console.log('addBlogProductSlug called with:', slug, 'editing:', editing);
+    if (process.env.NODE_ENV !== 'production') console.log('addBlogProductSlug called with:', slug, 'editing:', editing);
     if (!slug) return;
     const setFn = editing ? setEditingBlogProductSlugs : setBlogProductSlugs;
     setFn((prev) => {
       const next = Array.isArray(prev) ? [...prev] : [];
-      console.log('Current slugs:', prev, 'adding:', slug);
+      if (process.env.NODE_ENV !== 'production') console.log('Current slugs:', prev, 'adding:', slug);
       if (next.includes(slug)) {
-        console.log('Slug already exists, not adding');
+        if (process.env.NODE_ENV !== 'production') console.log('Slug already exists, not adding');
         return next;
       }
       next.push(slug);
-      console.log('New slugs:', next);
+      if (process.env.NODE_ENV !== 'production') console.log('New slugs:', next);
       return next;
     });
   }
@@ -123,22 +123,22 @@ export default function AdminPanel() {
   }
 
   const handleAttachBlogProductDraft = (product) => {
-    console.log('handleAttachBlogProductDraft called with:', product);
+    if (process.env.NODE_ENV !== 'production') console.log('handleAttachBlogProductDraft called with:', product);
     if (!product?.slug) {
-      console.log('No product slug, returning');
+      if (process.env.NODE_ENV !== 'production') console.log('No product slug, returning');
       return;
     }
-    console.log('Adding product slug to draft:', product.slug);
+    if (process.env.NODE_ENV !== 'production') console.log('Adding product slug to draft:', product.slug);
     addBlogProductSlug(product.slug);
   };
 
   const handleAttachBlogProductEdit = (product) => {
-    console.log('handleAttachBlogProductEdit called with:', product);
+    if (process.env.NODE_ENV !== 'production') console.log('handleAttachBlogProductEdit called with:', product);
     if (!product?.slug) {
-      console.log('No product slug, returning');
+      if (process.env.NODE_ENV !== 'production') console.log('No product slug, returning');
       return;
     }
-    console.log('Adding product slug to edit:', product.slug);
+    if (process.env.NODE_ENV !== 'production') console.log('Adding product slug to edit:', product.slug);
     addBlogProductSlug(product.slug, { editing: true });
   };
 

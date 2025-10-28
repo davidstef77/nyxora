@@ -1,6 +1,6 @@
 import Image from '../../../components/SmartImage';
 import Link from 'next/link';
-import ProductsForCategory from '../../../components/ProductsForCategory';
+import ProductsForCategoryClient from '../../../components/ProductsForCategoryClient';
 import connect from '../../api/lib/db';
 import Category from '../../api/lib/models/Category';
 
@@ -21,6 +21,43 @@ async function getData(slug) {
 
 import '../categories.css';
 
+// Generate page metadata (title, description, open graph, canonical)
+export async function generateMetadata({ params }) {
+  try {
+    const { category } = await getData(params.slug);
+    const base = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+    if (!category) {
+      return {
+        title: 'Categorie - PCAffiliate',
+        description: 'Găsește produsele și ofertele noastre pe PCAffiliate.'
+      };
+    }
+
+    const title = `${category.name} — PCAffiliate`;
+    const description = category.description || `Produse din categoria ${category.name}`;
+    const url = `${base.replace(/\/$/, '')}/categories/${category.slug}`;
+    const image = category.icon ? (category.icon.startsWith('http') ? category.icon : `${base.replace(/\/$/, '')}${category.icon}`) : undefined;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: url
+      },
+      openGraph: {
+        title,
+        description,
+        url,
+        images: image ? [{ url: image, alt: category.name }] : undefined
+      }
+    };
+  } catch (err) {
+    // If metadata generation fails, fallback to a safe title
+    return { title: 'Categorie - PCAffiliate' };
+  }
+}
+
 export default async function CategoryPage({ params }) {
   try {
     const p = await params;
@@ -28,13 +65,26 @@ export default async function CategoryPage({ params }) {
 
     // Debug: log pentru a vedea ce date primim
     if (category) {
-      console.log('[CategoryPage] Category data:', {
-        name: category.name,
-        slug: category.slug,
-        icon: category.icon,
-        description: category.description
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[CategoryPage] Category data:', {
+          name: category.name,
+          slug: category.slug,
+          icon: category.icon,
+          description: category.description
+        });
+      }
     }
+
+    const base = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const breadcrumbJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `${base.replace(/\/$/, '')}/` },
+        { "@type": "ListItem", "position": 2, "name": "Categorii", "item": `${base.replace(/\/$/, '')}/categories` },
+        { "@type": "ListItem", "position": 3, "name": category.name, "item": `${base.replace(/\/$/, '')}/categories/${category.slug}` }
+      ]
+    };
 
     if (error || !category) {
       return (
@@ -80,6 +130,11 @@ export default async function CategoryPage({ params }) {
               {category.name}
             </span>
           </nav>
+          {/* Breadcrumb structured data for SEO */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+          />
         </div>
 
         {/* Enhanced full-bleed header */}
@@ -144,7 +199,7 @@ export default async function CategoryPage({ params }) {
               PRODUSE DISPONIBILE
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
-              Toate produsele din <span className="text-cyan-400">"{category.name}"</span>
+              Toate produsele din <span className="text-cyan-400">“{category.name}”</span>
             </h2>
             <p className="text-slate-300 text-lg max-w-3xl mx-auto leading-relaxed">
               Explorează gama noastră completă de produse din această categorie și găsește cele mai bune oferte
@@ -153,7 +208,7 @@ export default async function CategoryPage({ params }) {
 
           {/* Content stays centered inside the container */}
           <section className="mb-16">
-            <ProductsForCategory categorySlug={category.slug} />
+            <ProductsForCategoryClient categorySlug={category.slug} />
           </section>
 
           {/* Enhanced Call to Action section */}
@@ -210,56 +265,4 @@ export default async function CategoryPage({ params }) {
   }
 }
 
-// Client component to fetch and reveal products on user action
-function ProductsForCategoryPlaceholder({ categorySlug }) {
-  const [show, setShow] = useState(false);
-  const [products, setProducts] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  async function loadProducts() {
-    setLoading(true);
-    try {
-      const base = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
-      const url = new URL(`/api/products?category=${encodeURIComponent(categorySlug)}`, base.startsWith('http') ? base : `https://${base}`);
-      const res = await fetch(url.toString());
-      const json = await res.json();
-      setProducts(json.products || []);
-    } catch (err) {
-      console.error('loadProducts error', err);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-      setShow(true);
-    }
-  }
-
-  return (
-    <div>
-      {!show ? (
-        <div className="panel p-6">
-          <p className="text-slate-300 mb-4">Vezi produsele din această categorie.</p>
-          <button onClick={loadProducts} className="btn-primary">Arată Produse</button>
-        </div>
-      ) : (
-        <div>
-          {loading && <p className="text-slate-400">Se încarcă...</p>}
-          {!loading && products && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
-              {products.map((p) => (
-                <Link key={p.slug} href={`/products/${p.slug}`} className="bg-slate-800/60 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block">
-                  <div className="w-full h-40 relative">
-                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-slate-100">{p.name}</h3>
-                    <p className="text-sm text-slate-300 mt-1">{p.displayPrice || 'Preț nedefinit'}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+// Products rendering moved to client component `ProductsForCategoryClient` in src/components
