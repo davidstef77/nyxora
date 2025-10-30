@@ -140,6 +140,7 @@ export default function AdminShell() {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [adminKey, setAdminKey] = useState('');
   const { data: session } = useSession();
 
   const sections = [
@@ -151,15 +152,33 @@ export default function AdminShell() {
     { id: 'settings', label: 'Settings', icon: '⚙️' }
   ];
 
-  // Fetch dashboard stats
+  // Load saved admin key from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('adminKey');
+      if (saved) setAdminKey(saved.replace(/^['"]+|['"]+$/g, '').trim());
+    } catch {/* ignore */}
+  }, []);
+
+  // Persist admin key
+  useEffect(() => {
+    try {
+      if (adminKey) localStorage.setItem('adminKey', adminKey);
+      else localStorage.removeItem('adminKey');
+    } catch {/* ignore */}
+  }, [adminKey]);
+
+  // Fetch dashboard stats (try to include admin key to count unpublished too)
   useEffect(() => {
     async function fetchStats() {
       try {
+        const headers = adminKey ? { 'x-admin-key': adminKey } : undefined;
         const [productsRes, categoriesRes, blogsRes, topsRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/categories'),
-          fetch('/api/blogs'),
-          fetch('/api/tops')
+          fetch('/api/products', { headers }),
+          fetch('/api/categories', { headers }),
+          // request unpublished when authorized, falls back to published-only
+          fetch(adminKey ? '/api/blogs?published=0' : '/api/blogs', { headers }),
+          fetch(adminKey ? '/api/tops?published=0' : '/api/tops', { headers })
         ]);
         
         const [productsData, categoriesData, blogsData, topsData] = await Promise.all([
@@ -184,7 +203,7 @@ export default function AdminShell() {
     }
 
     fetchStats();
-  }, []);
+  }, [adminKey]);
 
     const showToast = useCallback((message, type = 'success') => {
       setToast({ message, type });
@@ -239,6 +258,16 @@ export default function AdminShell() {
         </div>
 
         <div style={{ marginTop: 40, padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="muted" style={{ fontSize: '12px', marginBottom: '8px' }}>
+            Admin key
+          </div>
+          <input
+            type="password"
+            placeholder="Enter admin key"
+            value={adminKey}
+            onChange={(e) => setAdminKey(e.target.value.replace(/^['"]+|['"]+$/g, '').trim())}
+            style={{ width: '100%', marginBottom: '12px', padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+          />
           <div className="muted" style={{ fontSize: '12px', marginBottom: '8px' }}>
             Logged in as
           </div>
@@ -392,7 +421,7 @@ export default function AdminShell() {
           ) : (
             <div className="card">
               <Suspense fallback={<LoadingSpinner />}>
-                <AdminList section={section} onToast={showToast} />
+                <AdminList adminKey={adminKey} showToast={showToast} />
               </Suspense>
             </div>
           )}

@@ -44,10 +44,12 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   const url = new URL(request.url);
-  const adminKeyRaw = url.searchParams.get('adminKey');
-  const adminKey = sanitizeKey(adminKeyRaw);
+  // Support both header x-admin-key and legacy ?adminKey= query param
+  const headerKey = sanitizeKey(request.headers.get('x-admin-key'));
+  const queryKey = sanitizeKey(url.searchParams.get('adminKey'));
+  const providedKey = headerKey || queryKey;
   const envKey = sanitizeKey(process.env.ADMIN_KEY);
-  if (envKey && envKey !== adminKey) {
+  if (envKey && envKey !== providedKey) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

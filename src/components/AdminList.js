@@ -127,11 +127,11 @@ function EmptyState({ section }) {
   );
 }
 
-export default function AdminList({ adminKey, showToast }) {
+export default function AdminList({ adminKey, showToast, section: initialSection }) {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState('products');
+  const [activeSection, setActiveSection] = useState(initialSection || 'products');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentItem, setCurrentItem] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -149,12 +149,13 @@ export default function AdminList({ adminKey, showToast }) {
     setError(null);
     
     try {
+      const headers = adminKey ? { 'x-admin-key': adminKey } : undefined;
       const responses = await Promise.all(
-        sections.map(section => 
-          fetch(`/api/${section}`, {
-            headers: { 'ADMIN_KEY': adminKey }
-          }).then(res => res.ok ? res.json() : Promise.reject(`Failed to fetch ${section}`))
-        )
+        sections.map(section => {
+          // for blogs/tops we want unpublished when key is provided
+          const path = (section === 'blogs' || section === 'tops') && adminKey ? `/api/${section}?published=0` : `/api/${section}`;
+          return fetch(path, { headers }).then(res => res.ok ? res.json() : Promise.reject(`Failed to fetch ${section} (${res.status})`));
+        })
       );
       
       const newData = {};
@@ -171,7 +172,7 @@ export default function AdminList({ adminKey, showToast }) {
     } finally {
       setLoading(false);
     }
-  }, [adminKey, showToast, sections]);
+  }, [adminKey, showToast]);
 
   useEffect(() => {
     fetchData();
@@ -201,7 +202,7 @@ export default function AdminList({ adminKey, showToast }) {
     try {
       const response = await fetch(`/api/${activeSection}/${item.slug}`, {
         method: 'DELETE',
-        headers: { 'ADMIN_KEY': adminKey }
+        headers: adminKey ? { 'x-admin-key': adminKey } : undefined
       });
 
       if (response.ok) {
@@ -228,7 +229,7 @@ export default function AdminList({ adminKey, showToast }) {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'ADMIN_KEY': adminKey
+          ...(adminKey ? { 'x-admin-key': adminKey } : {})
         },
         body: JSON.stringify(formData)
       });

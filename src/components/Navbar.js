@@ -151,12 +151,15 @@ export default function Navbar() {
       )}
       
       <header
-        className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 z-50 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md"
+        className="fixed top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 z-50 rounded-2xl shadow-2xl backdrop-blur-md"
         aria-label="Main navigation"
         style={{ 
           opacity: mounted ? 1 : 0, 
-          transform: mounted ? 'translateY(0)' : 'translateY(-16px)',
-          transition: 'opacity 0.45s ease, transform 0.45s ease'
+          // Avoid keeping a transform on the header after mount — on iOS this turns
+          // fixed descendants into absolute and clips them when ancestor has overflow rules
+          transform: mounted ? 'none' : 'translateY(-16px)',
+          transition: 'opacity 0.45s ease, transform 0.45s ease',
+          overflow: mobileMenuOpen ? 'visible' : undefined
         }}
       >
         <div className="bg-gradient-to-r from-[var(--purple-700)] to-[var(--purple-600)] border border-white/10">
@@ -307,7 +310,8 @@ export default function Navbar() {
           </div>
         </div>
         
-        {/* Mobile dropdown menu - complet refăcut și optimizat pentru touch */}
+  {/* Mobile dropdown menu - complet refăcut și optimizat pentru touch */}
+  {/* Note: Keep header free of transforms when mounted to prevent clipping on iOS */}
         {mobileMenuOpen && (
           <div 
             id="mobile-menu"
