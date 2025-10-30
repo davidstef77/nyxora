@@ -3,15 +3,21 @@ import Product from '../api/lib/models/Product';
 import Category from '../api/lib/models/Category';
 import Blog from '../api/lib/models/Blog';
 
-export async function GET() {
+export async function GET(request) {
   try {
     await connect();
     const products = await Product.find().select('slug updatedAt').lean();
     const categories = await Category.find().select('slug updatedAt').lean();
     const blogs = await Blog.find().select('slug updatedAt publishedAt').lean();
 
-    const base = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'https://nyxora.ro';
-    const baseUrl = base.startsWith('http') ? base : `https://${base}`;
+  // Prefer an explicit public base URL, otherwise use the request origin so
+  // the sitemap reflects the hostname the client used (helps Search Console),
+  // then fallback to VERCEL_URL and finally a hardcoded default.
+  const requestOrigin = request ? new URL(request.url).origin : null;
+  const base = process.env.NEXT_PUBLIC_BASE_URL || requestOrigin ||
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+          'https://nyxora.ro';
+  const baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
 
     const urls = [
       { 
