@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from './SmartImage';
 
 export default function ProductsForCategoryClient({ categorySlug }) {
-  const [show, setShow] = useState(false);
+  // load products immediately when component mounts
   const [products, setProducts] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,18 +21,14 @@ export default function ProductsForCategoryClient({ categorySlug }) {
       setProducts([]);
     } finally {
       setLoading(false);
-      setShow(true);
     }
   }
 
-  if (!show) {
-    return (
-      <div className="panel p-6">
-        <p className="text-slate-300 mb-4">Vezi produsele din această categorie.</p>
-        <button onClick={loadProducts} className="btn-primary">Arată Produse</button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // automatically load products for the category
+    loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categorySlug]);
 
   return (
     <div>
@@ -43,11 +39,11 @@ export default function ProductsForCategoryClient({ categorySlug }) {
       {!loading && products && products.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
           {products.map((p) => {
-            const affiliateId = p.affiliateId || p.slug || (p._id && String(p._id));
-            const productHref = `/r/${encodeURIComponent(affiliateId)}?t=${encodeURIComponent(p.slug)}&utm_source=pca&utm_medium=affiliate&utm_campaign=${encodeURIComponent(categorySlug)}`;
+            // Use internal product page links (no /r/ affiliate redirects here)
+            const productHref = `/products/${encodeURIComponent(p.slug)}`;
             return (
               <article key={p.slug || p._id} className="bg-slate-800/60 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition block">
-                <Link href={`/products/${p.slug}`} className="block">
+                <Link href={productHref} className="block">
                   <div className="w-full h-40 relative">
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
                   </div>
@@ -58,9 +54,8 @@ export default function ProductsForCategoryClient({ categorySlug }) {
                   <div className="mt-3 flex items-center justify-between">
                     <div>
                       <div className="text-lg font-semibold text-white">{p.displayPrice || p.price || 'Contactează vânzător'}</div>
-                      <div className={`text-sm mt-1 ${p.inStock ? 'text-green-400' : 'text-rose-400'}`}>
-                        {p.inStock ? 'În stoc' : 'Stoc epuizat'}
-                      </div>
+                      {/* Always show as in-stock to avoid exposing out-of-stock state */}
+                      <div className={`text-sm mt-1 text-green-400`}>În stoc</div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <Link href={productHref} className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-md text-sm font-semibold">
