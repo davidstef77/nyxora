@@ -163,59 +163,47 @@ export default async function ProductPage({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
         />
-        <main className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-slate-800">
-          <div className="container p-8" id="product-main">
+        <main className="min-h-screen bg-black">
+          <div className="max-w-4xl mx-auto p-3" id="product-main">
             <ScrollToTop targetId="product-main" behavior="smooth" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Gallery */}
-          <div className="lg:col-span-1">
-            <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900/70 to-slate-800/50 shadow-xl p-4">
-              <ProductGallery images={(product.images && product.images.length>0) ? product.images : (product.image ? [product.image] : [])} alt={product.name} />
+        {/* Image Section - Full Width */}
+        <div className="mb-4">
+          <ProductGallery images={(product.images && product.images.length>0) ? product.images : (product.image ? [product.image] : [])} alt={product.name} />
+        </div>
+
+        {/* Content Section */}
+        <div className="space-y-3">
+          {/* Title and Price */}
+          <div>
+            <h1 className="text-xs font-normal text-white mb-1 leading-snug">{product.name}</h1>
+            <div className="text-lg font-medium text-white">
+              {primaryOffer ? `${primaryOffer.price} ${primaryOffer.priceCurrency || 'RON'}` : 'Preț nedefinit'}
             </div>
           </div>
 
-          {/* Right: Details */}
-          <div className="lg:col-span-2">
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <div className="text-sm text-slate-400 mb-4">SKU: <span className="font-mono">{product.slug}</span></div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-extrabold text-white">{primaryOffer ? `${primaryOffer.price} ${primaryOffer.priceCurrency || 'RON'}` : 'Preț nedefinit'}</div>
-                <div className="text-sm text-slate-400">Livrare și taxe pot varia</div>
-              </div>
-            </div>
+          {/* Description */}
+          <div>
+            <p className="text-xs text-gray-300">{product.description || 'Nu există descriere disponibilă pentru acest produs.'}</p>
+          </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Descriere</h3>
-                <p className="text-slate-300 leading-relaxed">{product.description || 'Nu există descriere disponibilă pentru acest produs.'}</p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Oferte & link-uri</h3>
-                <OffersList offers={offersList} affiliateLinks={affiliateLinks} />
-              </div>
+          {/* Buttons */}
+          <div className="flex items-center gap-2">
+            <a href="#offers" className="inline-flex items-center rounded-md bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-2 transition">Vezi oferte</a>
+            <Link href="/" className="inline-flex items-center rounded-md bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-2 transition">Înapoi</Link>
+            <div className="ml-1">
+              <FavoriteButton productSlug={product.slug} size={20} />
             </div>
+          </div>
 
-              <div className="mt-6 flex gap-3 items-center">
-              <a href="#offers" style={{ color: '#fff' }} className="px-6 py-3 rounded-2xl text-lg shadow-lg bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 text-white">Vezi ofertele</a>
-              <Link href="/" style={{ color: '#fff' }} className="px-4 py-2 rounded border border-slate-700 text-white">Înapoi la listă</Link>
-              <div className="ml-2">
-                <FavoriteButton productSlug={product.slug} size={44} />
-              </div>
-            </div>
+          {/* Offers */}
+          <div>
+            <OffersList offers={offersList} affiliateLinks={affiliateLinks} />
+          </div>
 
-            {/* Mobile sticky CTA */}
-            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[92%] sm:hidden">
-              <a href="#offers" style={{ color: '#fff' }} className="w-full block text-center bg-indigo-600 text-white py-3 rounded-2xl font-semibold shadow-xl">Vezi ofertele</a>
-            </div>
-
-            <div className="mt-10">
-                <ProductTabs description={product.description} specs={product.metadata?.specs || {}} benchmarks={product.benchmarks || product.metadata?.benchmarks || []} />
-            </div>
+          {/* Product Details Tabs */}
+          <div>
+            <ProductTabs description={product.description} specs={product.metadata?.specs || {}} benchmarks={product.benchmarks || product.metadata?.benchmarks || []} />
           </div>
         </div>
         </div>

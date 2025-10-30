@@ -1,43 +1,74 @@
 "use client"
 
 export default function OffersList({ offers = [], affiliateLinks = [] }) {
-  if ((!offers || offers.length === 0) && (!affiliateLinks || affiliateLinks.length === 0)) {
-    return <div className="text-slate-400">Nu există oferte asociate acestui produs.</div>
+  const hasOffers = Array.isArray(offers) && offers.length > 0
+  const hasAffiliates = Array.isArray(affiliateLinks) && affiliateLinks.length > 0
+
+  if (!hasOffers && !hasAffiliates) {
+    return <div className="text-xs text-gray-400">Nu există oferte pentru acest produs.</div>
   }
 
   return (
-    <div className="space-y-3">
-      {offers && offers.length > 0 && offers.map((o, idx) => (
-        <div key={idx} className="flex items-center justify-between bg-gradient-to-r from-slate-800/60 to-slate-800/40 p-4 rounded-2xl shadow-sm ring-1 ring-white/5">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold">{String(o.priceValue).slice(0,1)}</div>
-            <div>
-              <div className="text-sm text-white">Oferta furnizor</div>
-              <div className="font-semibold text-lg text-white">{o.priceValue} {o.priceCurrency || 'RON'}</div>
-              {o.affiliateUrl && <div className="text-sm text-white truncate mt-1"><a href={o.affiliateUrl} target="_blank" rel="noreferrer" className="underline text-white">Vezi detalii furnizor</a></div>}
+    <div className="space-y-2">
+      {hasOffers && offers.map((o, idx) => (
+        <div
+          key={idx}
+          className="group flex items-center justify-between rounded-lg border border-gray-800 bg-black/20 p-3 hover:border-gray-600 transition"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="text-sm font-semibold text-white truncate">
+              {o.priceValue} {o.priceCurrency || 'RON'}
             </div>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
             {o.affiliateUrl ? (
-              <a href={o.affiliateUrl} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-lg shadow bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 text-white">Vezi ofertă</a>
+              <a
+                href={o.affiliateUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 transition"
+              >
+                Vezi ofertă<span aria-hidden>→</span>
+              </a>
             ) : (
-              <button disabled className="px-4 py-2 bg-slate-600 text-white rounded-lg opacity-60">Fără link</button>
+              <button
+                disabled
+                className="inline-flex items-center gap-1 rounded-md border border-gray-700 text-gray-400 text-xs px-3 py-1.5 opacity-60"
+              >
+                Fără link
+              </button>
             )}
           </div>
         </div>
       ))}
 
-      {affiliateLinks && affiliateLinks.length > 0 && affiliateLinks.map((a, idx) => (
-        <div key={`a-${idx}`} className="flex items-center justify-between bg-gradient-to-r from-slate-800/60 to-slate-800/40 p-4 rounded-2xl shadow-sm ring-1 ring-white/5">
-          <div>
-            <div className="text-sm text-white">{a.storeName || 'Furnizor'}</div>
-            <div className="font-semibold text-lg text-white">{a.price || '—'}</div>
+      {hasAffiliates && affiliateLinks.map((a, idx) => (
+        <div
+          key={`a-${idx}`}
+          className="group flex items-center justify-between rounded-lg border border-gray-800 bg-black/20 p-3 hover:border-gray-600 transition"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="text-xs text-gray-400 truncate">{a.storeName || 'Furnizor'}</div>
+            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full border border-purple-600/40 text-purple-300">Afiliat</span>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-white">{a.price || '—'}</div>
             {a.url ? (
-              <a href={a.url} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-lg shadow bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 text-white">Vezi ofertă</a>
+              <a
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-md bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 transition"
+              >
+                Vezi ofertă<span aria-hidden>→</span>
+              </a>
             ) : (
-              <button disabled className="px-4 py-2 bg-slate-600 text-white rounded-lg opacity-60">Fără link</button>
+              <button
+                disabled
+                className="inline-flex items-center gap-1 rounded-md border border-gray-700 text-gray-400 text-xs px-3 py-1.5 opacity-60"
+              >
+                Fără link
+              </button>
             )}
           </div>
         </div>
