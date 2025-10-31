@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import connect from '../api/lib/db';
 import Blog from '../api/lib/models/Blog';
+import { League_Spartan } from 'next/font/google';
+
+const leagueSpartan = League_Spartan({ subsets: ['latin'], weight: ['400','500','600','700'] });
 
 // Forțează rendering dinamic
 export const dynamic = 'force-dynamic';
@@ -72,7 +75,7 @@ export default async function BlogListPage() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(blogListJsonLd) }}
         />
-        <div className="container px-6 py-12">
+        <div className={`container px-6 pb-12 pt-28 sm:pt-32 ${leagueSpartan.className}`}>
           <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Blog</h1>
         {blogs.length === 0 ? (
           <p className="text-slate-400">Nu există articole publicate momentan.</p>
@@ -95,7 +98,7 @@ export default async function BlogListPage() {
   } catch (err) {
     console.error('[page]/blog error', err);
     return (
-      <div className="container px-6 py-12">
+      <div className={`container px-6 pb-12 pt-28 sm:pt-32 ${leagueSpartan.className}`}>
         <h1 className="text-2xl font-semibold">Blog</h1>
         <p className="text-red-400">A apărut o eroare la încărcarea articolelor.</p>
       </div>

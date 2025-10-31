@@ -3,6 +3,9 @@ import Link from 'next/link';
 import connect from '../../api/lib/db';
 import Blog from '../../api/lib/models/Blog';
 import Product from '../../api/lib/models/Product';
+import { League_Spartan } from 'next/font/google';
+
+const leagueSpartan = League_Spartan({ subsets: ['latin'], weight: ['400','500','600','700'] });
 
 // Forțează rendering dinamic
 export const dynamic = 'force-dynamic';
@@ -129,48 +132,61 @@ export default async function BlogDetail({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
         />
-        <div className="container px-6 py-12">
-          <h1 className="text-2xl sm:text-3xl font-semibold mb-4">{b.title}</h1>
-          <div className="text-sm text-slate-400 mb-6">{b.author} • {b.publishedAt ? new Date(b.publishedAt).toLocaleDateString() : ''}</div>
-        {b.image && (
-          <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden border border-white/10 mb-6">
-            <Image
-              src={b.image}
-              alt={b.title}
-              fill
-              sizes="(min-width: 1024px) 1024px, 100vw"
-              className="object-cover"
-              unoptimized
-            />
-          </div>
-        )}
-        <div className="blog-content" dangerouslySetInnerHTML={{ __html: contentHTML }} />
-        {attachedProducts.length > 0 && (
-          <section className="blog-linked-products">
-            <h2 className="blog-linked-products__title">Produse menționate</h2>
-            <div className="blog-linked-products__list">
-              {attachedProducts.map((product) => {
-                const price = Array.isArray(product?.affiliateLinks) && product.affiliateLinks.length > 0 ? product.affiliateLinks[0]?.price : product?.displayPrice;
-                return (
-                  <article key={product.slug} className="blog-linked-product">
-                    <div className="blog-linked-product__left">
-                      <Link href={`/products/${product.slug}`} className="blog-linked-product__view-btn">Vizualizează produs</Link>
-                    </div>
-                    <div className="blog-linked-product__main">
-                      <h3 className="blog-linked-product__name">{product.name || product.title || product.slug}</h3>
-                      {price && <div className="blog-linked-product__price">{price}</div>}
-                    </div>
-                  </article>
-                );
-              })}
+        <div className={`container px-4 sm:px-6 max-w-3xl mx-auto pb-16 pt-28 sm:pt-32 ${leagueSpartan.className}`}
+          style={{ background: 'linear-gradient(to bottom, #181818 0%, #232323 100%)', borderRadius: '1.5rem' }}>
+          {/* Header Section */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+              <span className="text-2xl">📝</span>
+              <span className="text-xs font-medium text-white/80 uppercase tracking-wider">Articol Blog</span>
             </div>
-          </section>
-        )}
+            <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-white leading-tight">{b.title}</h1>
+            <div className="text-sm text-slate-400 mb-2">{b.author} • {b.publishedAt ? new Date(b.publishedAt).toLocaleDateString() : ''}</div>
+          </div>
+          {/* Featured Image */}
+          {b.image && (
+            <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden border border-white/10 mb-8 shadow-lg">
+              <Image
+                src={b.image}
+                alt={b.title}
+                fill
+                sizes="(min-width: 1024px) 1024px, 100vw"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          )}
+          {/* Blog Content */}
+          <div className="prose prose-invert prose-xl max-w-none mb-12" dangerouslySetInnerHTML={{ __html: contentHTML }} />
+          {/* Mentioned Products */}
+          {attachedProducts.length > 0 && (
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold mb-6 text-center text-white">🛒 Produse menționate</h2>
+              <div className="grid gap-6 sm:grid-cols-2">
+                {attachedProducts.map((product) => {
+                  const price = Array.isArray(product?.affiliateLinks) && product.affiliateLinks.length > 0 ? product.affiliateLinks[0]?.price : product?.displayPrice;
+                  const img = (product.images && product.images.length) ? product.images[0] : (product.image || null);
+                  return (
+                    <article key={product.slug} className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-md p-5 flex flex-col items-center text-center">
+                      {img && (
+                        <div className="mb-4 w-full flex justify-center">
+                          <Image src={img} alt={product.name} width={120} height={120} className="rounded-lg object-contain" unoptimized />
+                        </div>
+                      )}
+                      <h3 className="text-lg font-semibold mb-2 text-white">{product.name || product.title || product.slug}</h3>
+                      {price && <div className="text-xl font-bold text-yellow-500 mb-2">{price} RON</div>}
+                      <Link href={`/products/${product.slug}`} className="inline-block px-5 py-2 rounded-lg bg-yellow-500 text-white font-medium hover:bg-yellow-600 transition-all mt-2">Vizualizează produs</Link>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
         </div>
       </>
     );
   } catch (err) {
     console.error('[page]/blog/[slug] error', err);
-    return (<div className="container px-6 py-12"><h1>Eroare</h1></div>);
+    return (<div className={`container px-6 pb-12 pt-28 sm:pt-32 ${leagueSpartan.className}`}><h1>Eroare</h1></div>);
   }
 }
