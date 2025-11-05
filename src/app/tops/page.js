@@ -6,6 +6,28 @@ import Top from '../api/lib/models/Top';
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
+export const metadata = {
+  title: 'Topuri Produse | Nyxora',
+  description: 'Descoperă topurile noastre cu cele mai bune produse: laptopuri, telefoane, componente PC și multe altele',
+  alternates: {
+    canonical: 'https://nyxora.ro/tops'
+  },
+  openGraph: {
+    title: 'Topuri Produse | Nyxora',
+    description: 'Descoperă topurile noastre cu cele mai bune produse: laptopuri, telefoane, componente PC și multe altele',
+    url: 'https://nyxora.ro/tops',
+    type: 'website'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true
+    }
+  }
+};
+
 export default async function TopsListPage() {
   try {
     await connect();

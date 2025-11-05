@@ -14,6 +14,10 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /auth/
 Disallow: /private/
+Disallow: /r/
+Disallow: /favorites
+Disallow: /build
+Disallow: /profile
 
 # Do not disallow /_next/ or static assets — crawlers need access to CSS/JS/images
 # Sitemap location

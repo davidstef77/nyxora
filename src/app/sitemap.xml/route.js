@@ -2,13 +2,15 @@ import connect from '../api/lib/db';
 import Product from '../api/lib/models/Product';
 import Category from '../api/lib/models/Category';
 import Blog from '../api/lib/models/Blog';
+import Top from '../api/lib/models/Top';
 
 export async function GET(request) {
   try {
     await connect();
     const products = await Product.find().select('slug updatedAt').lean();
     const categories = await Category.find().select('slug updatedAt').lean();
-    const blogs = await Blog.find().select('slug updatedAt publishedAt').lean();
+    const blogs = await Blog.find({ published: true }).select('slug updatedAt publishedAt').lean();
+    const tops = await Top.find({ published: true }).select('slug updatedAt publishedAt').lean();
 
   // Prefer an explicit public base URL, otherwise use the request origin so
   // the sitemap reflects the hostname the client used (helps Search Console),
@@ -33,21 +35,9 @@ export async function GET(request) {
         lastmod: new Date().toISOString()
       },
       { 
-        loc: `${baseUrl}/categories`, 
-        priority: 0.8, 
-        changefreq: 'weekly',
-        lastmod: new Date().toISOString()
-      },
-      { 
         loc: `${baseUrl}/blog`, 
         priority: 0.8, 
         changefreq: 'weekly',
-        lastmod: new Date().toISOString()
-      },
-      { 
-        loc: `${baseUrl}/favorites`, 
-        priority: 0.6, 
-        changefreq: 'monthly',
         lastmod: new Date().toISOString()
       },
       { 
@@ -77,6 +67,13 @@ export async function GET(request) {
       lastmod: (b.updatedAt || b.publishedAt || new Date()).toISOString(), 
       priority: 0.6,
       changefreq: 'monthly'
+    }));
+    
+    tops.forEach((t) => urls.push({ 
+      loc: `${baseUrl}/tops/${t.slug}`, 
+      lastmod: (t.updatedAt || t.publishedAt || new Date()).toISOString(), 
+      priority: 0.7,
+      changefreq: 'weekly'
     }));
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

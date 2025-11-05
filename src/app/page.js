@@ -12,6 +12,34 @@ export const revalidate = 60;
 // Forțează rendering dinamic (nu static) pentru a evita probleme de cache
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'Nyxora - Laptopuri, Telefoane, Componente PC | Oferte și Recenzii',
+  description: 'Descoperă cele mai bune laptopuri, telefoane, procesoare, plăci video și componente PC. Vezi topuri, recenzii și oferte actualizate zilnic.',
+  alternates: {
+    canonical: 'https://nyxora.ro'
+  },
+  openGraph: {
+    title: 'Nyxora - Laptopuri, Telefoane, Componente PC',
+    description: 'Descoperă cele mai bune laptopuri, telefoane, procesoare, plăci video și componente PC. Vezi topuri, recenzii și oferte actualizate zilnic.',
+    url: 'https://nyxora.ro',
+    type: 'website',
+    siteName: 'Nyxora'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Nyxora - Laptopuri, Telefoane, Componente PC',
+    description: 'Descoperă cele mai bune laptopuri, telefoane, procesoare, plăci video și componente PC'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true
+    }
+  }
+};
+
 async function getData() {
   try {
     await connect();

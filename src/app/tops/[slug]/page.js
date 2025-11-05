@@ -24,19 +24,33 @@ export async function generateMetadata({ params }) {
       };
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro';
+    const canonical = `${baseUrl}/tops/${top.slug}`;
+
     return {
-      title: `${top.title} | PC Affiliate`,
+      title: `${top.title} | Nyxora`,
       description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experții noștri`,
+      alternates: {
+        canonical
+      },
       openGraph: {
         title: top.title,
         description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experții noștri`,
         type: 'article',
-        url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pcaffiliate.ro'}/tops/${top.slug}`
+        url: canonical
       },
       twitter: {
         card: 'summary_large_image',
         title: top.title,
-        description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experții noștri`
+        description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experților noștri`
+      },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true
+        }
       }
     };
   } catch (err) {

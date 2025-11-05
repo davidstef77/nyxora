@@ -1,6 +1,14 @@
 export const metadata = {
   title: 'Planificator Build — Nyxora',
   description: 'Planificator Build - în curs de dezvoltare',
+  robots: {
+    index: false,
+    follow: true,
+    googleBot: {
+      index: false,
+      follow: true
+    }
+  }
 };
 
 export default function BuildPage() {
