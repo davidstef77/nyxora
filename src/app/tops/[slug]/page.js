@@ -4,6 +4,7 @@ import Product from '../../api/lib/models/Product';
 import SmartImage from '../../../components/SmartImage';
 import { Metadata } from 'next';
 import { League_Spartan } from 'next/font/google';
+import { sanitizeText, sanitizeSlug, sanitizeArray, sanitizeJsonLd } from '../../../lib/sanitize';
 
 const leagueSpartan = League_Spartan({ subsets: ['latin'], weight: ['400','500','600','700'] });
 
@@ -15,7 +16,14 @@ export async function generateMetadata({ params }) {
   try {
     await connect();
     const { slug } = params;
-    const top = await Top.findOne({ slug, published: true }).lean();
+    
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slug);
+    if (!sanitizedSlug) {
+      return { title: 'Top negăsit', description: 'Topul solicitat nu a fost găsit.' };
+    }
+    
+    const top = await Top.findOne({ slug: sanitizedSlug, published: true }).lean();
     
     if (!top) {
       return {
@@ -66,7 +74,19 @@ export default async function TopDetail({ params }) {
   try {
     await connect();
     const { slug } = params;
-    const top = await Top.findOne({ slug, published: true }).lean();
+    
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slug);
+    if (!sanitizedSlug) {
+      return (
+        <div className={`container px-6 pb-12 pt-32 sm:pt-36 text-center ${leagueSpartan.className}`}>
+          <h1 className="text-2xl font-semibold mb-4">Top negăsit</h1>
+          <p className="text-slate-400">Topul solicitat nu există sau nu este publicat.</p>
+        </div>
+      );
+    }
+    
+    const top = await Top.findOne({ slug: sanitizedSlug, published: true }).lean();
     if (!top) {
       return (
         <div className={`container px-6 pb-12 pt-32 sm:pt-36 text-center ${leagueSpartan.className}`}>
@@ -78,8 +98,8 @@ export default async function TopDetail({ params }) {
 
     // Sanitize items array and support legacy productRef (ObjectId) as well as new productSlug
     const itemsRaw = Array.isArray(top.items) ? top.items.filter(Boolean) : [];
-    const productSlugs = itemsRaw.map(i => i?.productSlug).filter(Boolean);
-    const productIds = itemsRaw.map(i => i?.productRef).filter(Boolean);
+    const productSlugs = sanitizeArray(itemsRaw.map(i => i?.productSlug).filter(Boolean));
+    const productIds = sanitizeArray(itemsRaw.map(i => i?.productRef).filter(Boolean).map(id => String(id)));
     let productsMap = new Map();
     let productsById = new Map();
     if (productSlugs.length > 0 || productIds.length > 0) {
@@ -215,7 +235,7 @@ export default async function TopDetail({ params }) {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: JSON.stringify(sanitizeJsonLd({
                 "@context": "https://schema.org",
                 "@type": "ItemList",
                 "name": top.title,
@@ -231,13 +251,13 @@ export default async function TopDetail({ params }) {
                       "@type": "Product",
                       "name": product.name,
                       "description": product.description,
-                      "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://pcaffiliate.ro'}/products/${product.slug}`,
+                      "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/products/${product.slug}`,
                       ...(product.images && product.images[0] && { "image": product.images[0] }),
                       ...(product.price && { "offers": { "@type": "Offer", "price": product.price, "priceCurrency": "RON" } })
                     }
                   };
                 }).filter(Boolean)
-              })
+              }))
             }}
           />
         </div>

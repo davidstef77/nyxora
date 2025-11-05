@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ProductsForCategoryClient from '../../../components/ProductsForCategoryClient';
 import connect from '../../api/lib/db';
 import Category from '../../api/lib/models/Category';
+import { sanitizeSlug } from '../../../lib/sanitize';
 
 // Forțează rendering dinamic
 export const dynamic = 'force-dynamic';
@@ -10,8 +11,14 @@ export const revalidate = 60;
 
 async function getData(slug) {
   try {
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slug);
+    if (!sanitizedSlug) {
+      return { category: null, error: 'Invalid slug' };
+    }
+    
     await connect();
-    const category = await Category.findOne({ slug }).lean();
+    const category = await Category.findOne({ slug: sanitizedSlug }).lean();
     return { category };
   } catch (err) {
     console.error('[categories/[slug]] getData error', err);

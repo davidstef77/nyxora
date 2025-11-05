@@ -7,6 +7,7 @@ import OffersList from '../../../components/OffersList';
 import ProductTabs from '../../../components/ProductTabs';
 import FavoriteButton from '../../../components/FavoriteButton';
 import ScrollToTop from '../../../components/ScrollToTop';
+import { sanitizeSlug, sanitizeJsonLd } from '../../../lib/sanitize';
 
 // Forțează rendering dinamic
 export const dynamic = 'force-dynamic';
@@ -15,8 +16,19 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   try {
     const p = await params; // ensure dynamic params are resolved
+    
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(p.slug);
+    if (!sanitizedSlug) {
+      return { 
+        title: 'Produs Negăsit - Nyxora',
+        description: 'Produsul căutat nu a fost găsit pe Nyxora.',
+        robots: 'noindex,nofollow'
+      };
+    }
+    
     await connect();
-    const prod = await Product.findOne({ slug: p.slug }).lean();
+    const prod = await Product.findOne({ slug: sanitizedSlug }).lean();
     
     if (!prod) {
       return { 
@@ -75,10 +87,14 @@ export async function generateMetadata({ params }) {
 
 async function getProductBySlug(slug) {
   try {
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slug);
+    if (!sanitizedSlug) return null;
+    
     await connect();
     // Simple product fetch without manufacturer join — manufacturers are no longer displayed
     const res = await Product.aggregate([
-      { $match: { slug } },
+      { $match: { slug: sanitizedSlug } },
       { $limit: 1 },
       { $project: { name:1, slug:1, images:1, image:1, description:1, affiliateLinks:1, benchmarks:1, metadata:1, _id:1 } }
     ]).allowDiskUse(true);

@@ -4,6 +4,7 @@ import connect from '../../api/lib/db';
 import Blog from '../../api/lib/models/Blog';
 import Product from '../../api/lib/models/Product';
 import { League_Spartan } from 'next/font/google';
+import { sanitizeSlug, sanitizeArray, sanitizeJsonLd } from '../../../lib/sanitize';
 
 const leagueSpartan = League_Spartan({ subsets: ['latin'], weight: ['400','500','600','700'] });
 
@@ -14,10 +15,13 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   try {
     const slugParam = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
-    if (!slugParam) return { title: 'Articol negăsit' };
+    
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slugParam);
+    if (!sanitizedSlug) return { title: 'Articol negăsit' };
     
     await connect();
-    const b = await Blog.findOne({ slug: slugParam, published: true }).lean();
+    const b = await Blog.findOne({ slug: sanitizedSlug, published: true }).lean();
     if (!b) return { title: 'Articol negăsit' };
 
     const title = b.title;
@@ -76,15 +80,20 @@ export default async function BlogDetail({ params }) {
   try {
     await connect();
     const slugParam = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
-    if (!slugParam) {
+    
+    // Sanitize slug to prevent NoSQL injection
+    const sanitizedSlug = sanitizeSlug(slugParam);
+    if (!sanitizedSlug) {
       return (<div className="container px-6 py-12"><h1>Articol negăsit</h1></div>);
     }
-    const b = await Blog.findOne({ slug: slugParam, published: true }).lean();
+    const b = await Blog.findOne({ slug: sanitizedSlug, published: true }).lean();
     if (!b) return (<div className="container px-6 py-12"><h1>Articol negăsit</h1></div>);
 
     let contentHTML = b.content || '';
 
-    const productSlugs = Array.isArray(b.featuredProducts) ? b.featuredProducts.filter(Boolean) : [];
+    // Sanitize featured products slugs to prevent NoSQL injection
+    const productSlugsRaw = Array.isArray(b.featuredProducts) ? b.featuredProducts.filter(Boolean) : [];
+    const productSlugs = sanitizeArray(productSlugsRaw);
     let attachedProducts = [];
 
     if (productSlugs.length) {
@@ -130,7 +139,7 @@ export default async function BlogDetail({ params }) {
       <>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(sanitizeJsonLd(articleJsonLd)) }}
         />
         <div className={`container px-4 sm:px-6 max-w-3xl mx-auto pb-16 pt-28 sm:pt-32 ${leagueSpartan.className}`}
           style={{ background: 'linear-gradient(to bottom, #181818 0%, #232323 100%)', borderRadius: '1.5rem' }}>
