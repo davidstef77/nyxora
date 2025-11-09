@@ -160,7 +160,14 @@ export default function AdminList({ adminKey, showToast, section: initialSection
       
       const newData = {};
       sections.forEach((section, index) => {
-        newData[section] = responses[index] || [];
+        const payload = responses[index];
+        // unwrap array by key (products/categories/blogs/tops) or treat as empty
+        if (payload && typeof payload === 'object') {
+          const arr = payload[section];
+          newData[section] = Array.isArray(arr) ? arr : [];
+        } else {
+          newData[section] = [];
+        }
       });
       
       setData(newData);
@@ -252,7 +259,7 @@ export default function AdminList({ adminKey, showToast, section: initialSection
     }
   };
 
-  const currentData = data[activeSection] || [];
+  const currentData = Array.isArray(data[activeSection]) ? data[activeSection] : [];
   const filteredData = currentData.filter(item => {
     if (!searchQuery) return true;
     const searchableText = `${item.name || ''} ${item.title || ''} ${item.description || ''} ${item.slug || ''}`.toLowerCase();

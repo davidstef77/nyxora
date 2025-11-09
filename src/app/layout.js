@@ -132,21 +132,19 @@ export default function RootLayout({ children }) {
           }}
         />
         
-        {/* Service Worker Registration */}
+        {/* Service Worker Registration (no runtime access to process) */}
         <script dangerouslySetInnerHTML={{
           __html: `
-            if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+            (function(){
+              var IS_PROD = ${process.env.NODE_ENV === 'production' ? 'true' : 'false'};
+              if (!('serviceWorker' in navigator) || !IS_PROD) return;
               window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(/* registration */) {
-                    // service worker registered (production: suppressed debug logs)
-                  })
-                  .catch(function(error) {
-                    // registration failed - keep an error log in dev builds only
-                    try { if (process && process.env && process.env.NODE_ENV !== 'production') console.log('[SW] Service Worker registration failed:', error); } catch (e) {}
-                  });
+                navigator.serviceWorker.register('/sw.js').catch(function(error){
+                  // Optional: log to console in non-prod builds only (handled at build-time)
+                  ${process.env.NODE_ENV === 'production' ? '' : "try { console.log('[SW] Service Worker registration failed:', error); } catch (e) {}"}
+                });
               });
-            }
+            })();
           `
         }} />
       </head>
