@@ -20,8 +20,8 @@ export const metadata = {
     siteName: 'Nyxora',
     title: 'Produse Tech - Recenzii și Comparații | Nyxora',
     description: 'Găsește cele mai bune produse tech cu recenzii detaliate și comparații de preț pe Nyxora.',
-    url: 'https://nyxora.ro/products',
-    images: [{ url: 'https://nyxora.ro/og-image.png', width: 1200, height: 630 }],
+  url: 'https://www.nyxora.ro/products',
+  images: [{ url: 'https://www.nyxora.ro/og-image.png', width: 1200, height: 630 }],
     locale: 'ro_RO'
   },
   twitter: {
@@ -29,10 +29,10 @@ export const metadata = {
     site: '@nyxora',
     title: 'Produse Tech - Nyxora',
     description: 'Descoperă cele mai bune produse tech cu recenzii și comparații de preț.',
-    images: ['https://nyxora.ro/og-image.png']
+    images: ['https://www.nyxora.ro/og-image.png']
   },
   alternates: {
-    canonical: 'https://nyxora.ro/products'
+    canonical: 'https://www.nyxora.ro/products'
   },
   robots: 'index,follow,max-snippet:-1,max-image-preview:large'
 };

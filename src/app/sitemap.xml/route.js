@@ -33,6 +33,12 @@ export async function GET(request) {
         lastmod: new Date().toISOString()
       },
       { 
+        loc: `${baseUrl}/categories`, 
+        priority: 0.8, 
+        changefreq: 'weekly',
+        lastmod: new Date().toISOString()
+      },
+      { 
         loc: `${baseUrl}/blog`, 
         priority: 0.8, 
         changefreq: 'weekly',
@@ -86,9 +92,44 @@ export async function GET(request) {
       });
     });
 
+    // Normalize URLs: remove trailing slashes except root, collapse duplicate slashes
+    const normalizeUrlEntry = (u) => {
+      let loc = u.loc;
+      // remove any trailing slashes except for root
+      if (loc.endsWith('/') && loc !== `${baseUrl}/`) {
+        loc = loc.replace(/\/+$/, '');
+      }
+      // collapse any accidental double slashes in path (keep protocol //)
+      loc = loc.replace(/([^:]\/)\/+/, '$1');
+      return { ...u, loc };
+    };
+
+    // Explicitly exclude non-indexable paths in case they slip in
+    const DISALLOWED = [
+      /\/r\//,
+      /\/favorites(\/|$)/,
+      /\/build(\/|$)/,
+      /\/profile(\/|$)/,
+      /\/admin(\/|$)/,
+      /\/auth(\/|$)/,
+      /\/api(\/|$)/
+    ];
+
+    // Apply normalization and filtering
+    const filtered = urls
+      .map(normalizeUrlEntry)
+      .filter((u) => !DISALLOWED.some((rx) => rx.test(u.loc)));
+
+    // Deduplicate by loc and sort for stability
+    const byLoc = new Map();
+    for (const u of filtered) {
+      byLoc.set(u.loc, u);
+    }
+    const uniqueUrls = Array.from(byLoc.values()).sort((a, b) => a.loc.localeCompare(b.loc));
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url>
+${uniqueUrls.map(u => `  <url>
     <loc>${u.loc}</loc>
     <lastmod>${u.lastmod}</lastmod>
     <changefreq>${u.changefreq}</changefreq>

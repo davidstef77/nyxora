@@ -32,16 +32,16 @@ import '../categories.css';
 export async function generateMetadata({ params }) {
   try {
     const { category } = await getData(params.slug);
-    const base = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const base = 'https://www.nyxora.ro';
 
     if (!category) {
       return {
-        title: 'Categorie - PCAffiliate',
-        description: 'Găsește produsele și ofertele noastre pe PCAffiliate.'
+        title: 'Categorie - Nyxora',
+        description: 'Găsește produsele și ofertele noastre pe Nyxora.'
       };
     }
 
-    const title = `${category.name} — PCAffiliate`;
+    const title = `${category.name} — Nyxora`;
     const description = category.description || `Produse din categoria ${category.name}`;
     const url = `${base.replace(/\/$/, '')}/categories/${category.slug}`;
     const image = category.icon ? (category.icon.startsWith('http') ? category.icon : `${base.replace(/\/$/, '')}${category.icon}`) : undefined;
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }) {
     };
   } catch (err) {
     // If metadata generation fails, fallback to a safe title
-    return { title: 'Categorie - PCAffiliate' };
+    return { title: 'Categorie - Nyxora' };
   }
 }
 
@@ -82,7 +82,7 @@ export default async function CategoryPage({ params }) {
       }
     }
 
-    const base = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  const base = 'https://www.nyxora.ro';
     const breadcrumbJsonLd = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",

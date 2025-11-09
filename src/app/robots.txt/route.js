@@ -1,9 +1,7 @@
 export async function GET() {
-  // preferăm NEXT_PUBLIC_BASE_URL; dacă e absent folosim VERCEL_URL (with https) sau fallback
-  const envBase = process.env.NEXT_PUBLIC_BASE_URL ||
-                  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-                  'https://nyxora.ro';
-  const baseUrl = envBase.endsWith('/') ? envBase.slice(0, -1) : envBase;
+  // Force canonical host to www to match site canonicals and sitemap
+  const forcedHost = 'https://www.nyxora.ro';
+  const baseUrl = forcedHost;
 
   const text = `User-agent: *
 # Allow everything by default, block only admin/auth/api endpoints and private areas
