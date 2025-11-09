@@ -24,20 +24,27 @@ export async function generateMetadata({ params }) {
     const b = await Blog.findOne({ slug: sanitizedSlug, published: true }).lean();
     if (!b) return { title: 'Articol negăsit' };
 
-    const title = b.title;
-    const description = b.excerpt || (b.content ? b.content.replace(/<[^>]*>/g, '').substring(0, 160) + '...' : '');
+    const title = `${b.title} | Blog Nyxora`;
+    const description = b.excerpt || (b.content ? b.content.replace(/<[^>]*>/g, '').substring(0, 155) + '...' : 'Citește articolul complet pe blogul Nyxora.');
     const url = `https://nyxora.ro/blog/${b.slug}`;
     const image = b.image || 'https://nyxora.ro/og-image.png';
     const publishedTime = b.publishedAt ? new Date(b.publishedAt).toISOString() : undefined;
     const modifiedTime = b.updatedAt ? new Date(b.updatedAt).toISOString() : publishedTime;
+    const author = b.author || 'Echipa Nyxora';
+    
+    // Generate SEO-friendly keywords
+    const baseKeywords = ['blog tech', 'articole tehnologie', 'recenzii produse', 'ghiduri PC'];
+    const articleKeywords = Array.isArray(b.tags) && b.tags.length > 0 
+      ? [...baseKeywords, ...b.tags] 
+      : baseKeywords;
 
     return {
       title,
       description,
-      keywords: b.tags?.join(', '),
-      authors: [{ name: b.author || 'Nyxora' }],
+      keywords: articleKeywords.join(', '),
+      authors: [{ name: author, url: 'https://nyxora.ro' }],
       openGraph: {
-        title,
+        title: b.title,
         description,
         url,
         images: [
@@ -45,29 +52,40 @@ export async function generateMetadata({ params }) {
             url: image,
             width: 1200,
             height: 630,
-            alt: title
+            alt: b.title,
+            type: 'image/png'
           }
         ],
         type: 'article',
         publishedTime,
         modifiedTime,
-        authors: [b.author || 'Nyxora'],
+        authors: [author],
         tags: b.tags,
         locale: 'ro_RO',
         siteName: 'Nyxora'
       },
       twitter: {
         card: 'summary_large_image',
-        title,
+        site: '@nyxora',
+        creator: '@nyxora',
+        title: b.title,
         description,
-        images: [image]
+        images: [
+          {
+            url: image,
+            alt: b.title
+          }
+        ]
       },
       alternates: {
         canonical: url
       },
       robots: {
         index: true,
-        follow: true
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1
       }
     };
   } catch (err) {
@@ -106,23 +124,27 @@ export default async function BlogDetail({ params }) {
       contentHTML = b.excerpt || '';
     }
 
-    // Structured data for article
+    // Structured data for article with enhanced SEO
     const articleJsonLd = {
       "@context": "https://schema.org",
-      "@type": "Article",
+      "@type": "BlogPosting",
       "headline": b.title,
       "description": b.excerpt || '',
       "image": b.image ? [b.image] : ["https://nyxora.ro/og-image.png"],
       "author": {
         "@type": "Person",
-        "name": b.author || "Nyxora"
+        "name": b.author || "Echipa Nyxora",
+        "url": "https://nyxora.ro"
       },
       "publisher": {
         "@type": "Organization",
         "name": "Nyxora",
+        "url": "https://nyxora.ro",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://nyxora.ro/logo.png"
+          "url": "https://nyxora.ro/logo.png",
+          "width": 250,
+          "height": 60
         }
       },
       "datePublished": b.publishedAt ? new Date(b.publishedAt).toISOString() : undefined,
@@ -132,7 +154,10 @@ export default async function BlogDetail({ params }) {
         "@type": "WebPage",
         "@id": `https://nyxora.ro/blog/${b.slug}`
       },
-      "keywords": Array.isArray(b.tags) ? b.tags.join(', ') : ''
+      "keywords": Array.isArray(b.tags) ? b.tags.join(', ') : '',
+      "articleSection": "Tehnologie",
+      "inLanguage": "ro-RO",
+      "isAccessibleForFree": true
     };
 
     return (

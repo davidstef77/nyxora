@@ -20,51 +20,93 @@ export async function generateMetadata({ params }) {
     // Sanitize slug to prevent NoSQL injection
     const sanitizedSlug = sanitizeSlug(slug);
     if (!sanitizedSlug) {
-      return { title: 'Top negăsit', description: 'Topul solicitat nu a fost găsit.' };
+      return { 
+        title: 'Top negăsit | Nyxora', 
+        description: 'Topul solicitat nu a fost găsit.',
+        robots: { index: false, follow: true }
+      };
     }
     
     const top = await Top.findOne({ slug: sanitizedSlug, published: true }).lean();
     
     if (!top) {
       return {
-        title: 'Top negăsit',
-        description: 'Topul solicitat nu a fost găsit.'
+        title: 'Top negăsit | Nyxora',
+        description: 'Topul solicitat nu a fost găsit.',
+        robots: { index: false, follow: true }
       };
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro';
     const canonical = `${baseUrl}/tops/${top.slug}`;
+    const title = `${top.title} | Top Produse Nyxora`;
+    const description = top.description || `Descoperă ${top.title} - cele mai bune produse selectate și recomandate de experții Nyxora. Compară prețuri și caracteristici.`;
+    const image = top.image || 'https://nyxora.ro/og-image.png';
+    const publishedTime = top.publishedAt ? new Date(top.publishedAt).toISOString() : undefined;
+    const modifiedTime = top.updatedAt ? new Date(top.updatedAt).toISOString() : publishedTime;
+    
+    // Generate keywords based on top title and category
+    const baseKeywords = ['top produse', 'recomandări', 'comparație produse', 'cele mai bune'];
+    const topKeywords = top.category ? [...baseKeywords, top.category] : baseKeywords;
 
     return {
-      title: `${top.title} | Nyxora`,
-      description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experții noștri`,
+      title,
+      description,
+      keywords: topKeywords.join(', '),
+      authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
       alternates: {
         canonical
       },
       openGraph: {
         title: top.title,
-        description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experții noștri`,
+        description,
         type: 'article',
-        url: canonical
+        url: canonical,
+        images: [
+          {
+            url: image,
+            width: 1200,
+            height: 630,
+            alt: top.title,
+            type: 'image/png'
+          }
+        ],
+        locale: 'ro_RO',
+        siteName: 'Nyxora',
+        publishedTime,
+        modifiedTime
       },
       twitter: {
         card: 'summary_large_image',
+        site: '@nyxora',
+        creator: '@nyxora',
         title: top.title,
-        description: top.description || `Descoperă ${top.title} - cele mai bune produse selectate de experților noștri`
+        description,
+        images: [
+          {
+            url: image,
+            alt: top.title
+          }
+        ]
       },
       robots: {
         index: true,
         follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
         googleBot: {
           index: true,
-          follow: true
+          follow: true,
+          'max-snippet': -1,
+          'max-image-preview': 'large'
         }
       }
     };
   } catch (err) {
     console.error('Error generating metadata for top:', err);
     return {
-      title: 'Top | PC Affiliate',
+      title: 'Top Produse | Nyxora',
       description: 'Top produse recomandate'
     };
   }
@@ -231,7 +273,7 @@ export default async function TopDetail({ params }) {
               )}
             </>
           )}
-          {/* JSON-LD Structured Data */}
+          {/* JSON-LD Structured Data with enhanced SEO */}
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -240,20 +282,55 @@ export default async function TopDetail({ params }) {
                 "@type": "ItemList",
                 "name": top.title,
                 "description": top.description,
+                "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/tops/${top.slug}`,
                 "numberOfItems": sortedItems.length,
+                "author": {
+                  "@type": "Organization",
+                  "name": "Nyxora",
+                  "url": "https://nyxora.ro"
+                },
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Nyxora",
+                  "url": "https://nyxora.ro",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://nyxora.ro/logo.png",
+                    "width": 250,
+                    "height": 60
+                  }
+                },
+                "datePublished": top.publishedAt ? new Date(top.publishedAt).toISOString() : undefined,
+                "dateModified": top.updatedAt ? new Date(top.updatedAt).toISOString() : undefined,
+                "inLanguage": "ro-RO",
                 "itemListElement": sortedItems.map((item, index) => {
                   const product = item?.productSlug ? productsMap.get(item.productSlug) : productsById.get(String(item.productRef));
                   if (!product) return null;
+                  const imageSrc = (product.images && product.images.length) ? product.images[0] : (product.image || null);
                   return {
                     "@type": "ListItem",
                     "position": item.position,
                     "item": {
                       "@type": "Product",
                       "name": product.name,
-                      "description": product.description,
+                      "description": product.description || item.customNote || '',
                       "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/products/${product.slug}`,
-                      ...(product.images && product.images[0] && { "image": product.images[0] }),
-                      ...(product.price && { "offers": { "@type": "Offer", "price": product.price, "priceCurrency": "RON" } })
+                      ...(imageSrc && { "image": imageSrc }),
+                      ...(product.price && { 
+                        "offers": { 
+                          "@type": "Offer", 
+                          "price": product.price, 
+                          "priceCurrency": "RON",
+                          "availability": "https://schema.org/InStock",
+                          "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/products/${product.slug}`
+                        } 
+                      }),
+                      ...(product.manufacturer && {
+                        "brand": {
+                          "@type": "Brand",
+                          "name": product.manufacturer
+                        }
+                      })
                     }
                   };
                 }).filter(Boolean)
