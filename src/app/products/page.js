@@ -11,30 +11,50 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 30;
 
 export const metadata = {
-  title: 'Produse - Recenzii și Comparații | Nyxora',
+  title: 'Produse Tech - Recenzii și Comparații | Nyxora',
   description: 'Descoperă cele mai bune produse tech pe Nyxora. Recenzii detaliate, comparații de preț și recomandări pentru componente PC, laptopuri, periferice și multe altele.',
-  keywords: 'produse tech, recenzii, comparații preț, componente PC, laptopuri, periferice, recomandări',
-  authors: [{ name: 'Nyxora' }],
+  keywords: 'produse tech, recenzii, comparații preț, componente PC, laptopuri, periferice, recomandări produse, gadget-uri',
+  authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
   openGraph: {
     type: 'website',
     siteName: 'Nyxora',
     title: 'Produse Tech - Recenzii și Comparații | Nyxora',
     description: 'Găsește cele mai bune produse tech cu recenzii detaliate și comparații de preț pe Nyxora.',
-  url: 'https://www.nyxora.ro/products',
-  images: [{ url: 'https://www.nyxora.ro/og-image.png', width: 1200, height: 630 }],
+    url: 'https://nyxora.ro/products',
+    images: [
+      { 
+        url: 'https://nyxora.ro/og-image.png', 
+        width: 1200, 
+        height: 630,
+        alt: 'Produse Nyxora',
+        type: 'image/png'
+      }
+    ],
     locale: 'ro_RO'
   },
   twitter: {
     card: 'summary_large_image',
     site: '@nyxora',
-    title: 'Produse Tech - Nyxora',
+    creator: '@nyxora',
+    title: 'Produse Tech - Recenzii și Comparații | Nyxora',
     description: 'Descoperă cele mai bune produse tech cu recenzii și comparații de preț.',
-    images: ['https://www.nyxora.ro/og-image.png']
+    images: [
+      {
+        url: 'https://nyxora.ro/og-image.png',
+        alt: 'Produse Nyxora'
+      }
+    ]
   },
   alternates: {
-    canonical: 'https://www.nyxora.ro/products'
+    canonical: 'https://nyxora.ro/products'
   },
-  robots: 'index,follow,max-snippet:-1,max-image-preview:large'
+  robots: {
+    index: true,
+    follow: true,
+    'max-snippet': -1,
+    'max-image-preview': 'large',
+    'max-video-preview': -1
+  }
 };
 
 function parsePriceToNumber(price) {

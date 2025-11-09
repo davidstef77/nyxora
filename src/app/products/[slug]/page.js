@@ -23,7 +23,10 @@ export async function generateMetadata({ params }) {
       return { 
         title: 'Produs Negăsit - Nyxora',
         description: 'Produsul căutat nu a fost găsit pe Nyxora.',
-        robots: 'noindex,nofollow'
+        robots: {
+          index: false,
+          follow: false
+        }
       };
     }
     
@@ -34,32 +37,50 @@ export async function generateMetadata({ params }) {
       return { 
         title: 'Produs Negăsit - Nyxora',
         description: 'Produsul căutat nu a fost găsit pe Nyxora.',
-        robots: 'noindex,nofollow'
+        robots: {
+          index: false,
+          follow: false
+        }
       };
     }
 
     const title = `${prod.name} - Recenzii și Oferte | Nyxora`;
     const description = prod.description 
-      ? `${prod.description.slice(0, 140)}... Găsește cele mai bune oferte pentru ${prod.name} pe Nyxora.`
-      : `Descoperă ${prod.name} pe Nyxora. Compară prețuri și găsește cele mai bune oferte.`;
+      ? `${prod.description.slice(0, 145)}... Compară prețuri și găsește oferte pentru ${prod.name}.`
+      : `Descoperă ${prod.name} pe Nyxora. Compară prețuri și găsește cele mai bune oferte disponibile.`;
     
-  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro';
-  const canonical = `${base}/products/${prod.slug}`;
-  const ogImages = prod.image ? [{ url: prod.image, width: 1200, height: 630 }] : [{ url: `${base}/og-image.png`, width: 1200, height: 630 }];
+    const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro';
+    const canonical = `${base}/products/${prod.slug}`;
+    const imageUrl = prod.image || `${base}/og-image.png`;
+    const ogImages = [
+      { 
+        url: imageUrl, 
+        width: 1200, 
+        height: 630,
+        alt: prod.name,
+        type: 'image/png'
+      }
+    ];
+    
+    // Generate keywords based on product name and category
+    const baseKeywords = ['recenzie', 'review', 'preț', 'oferte', 'comparație'];
+    const productKeywords = prod.category 
+      ? [...baseKeywords, prod.category, prod.name]
+      : [...baseKeywords, prod.name];
 
     return {
       title,
       description,
-      keywords: `${prod.name}, review, recenzie, preț, oferte, comparație, Nyxora`,
-      authors: [{ name: 'Nyxora' }],
+      keywords: productKeywords.join(', '),
+      authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
       canonical,
       alternates: {
         canonical
       },
       openGraph: {
-        type: 'website',
+        type: 'product',
         siteName: 'Nyxora',
-        title,
+        title: prod.name,
         description,
         url: canonical,
         images: ogImages,
@@ -69,18 +90,27 @@ export async function generateMetadata({ params }) {
         card: 'summary_large_image',
         site: '@nyxora',
         creator: '@nyxora',
-        title,
+        title: prod.name,
         description,
         images: ogImages
       },
-      robots: 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1'
+      robots: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1
+      }
     };
   } catch (err) {
     console.error('Product metadata generation error:', err);
     return { 
       title: 'Produs - Nyxora',
       description: 'Explorează produsele pe Nyxora.',
-      robots: 'noindex'
+      robots: {
+        index: false,
+        follow: true
+      }
     };
   }
 }
@@ -136,17 +166,17 @@ export default async function ProductPage({ params }) {
       if (parsed) primaryOffer = { '@type': 'Offer', price: parsed[1].replace(',', '.'), priceCurrency: 'RON' };
     }
 
-    // Enhanced structured data for product
+    // Enhanced structured data for product with SEO optimization
     const productJsonLd = {
       "@context": "https://schema.org/",
       "@type": "Product",
       "name": product.name,
-      "description": product.description || `Descoperă ${product.name} pe Nyxora`,
+      "description": product.description || `Descoperă ${product.name} pe Nyxora - recenzii și comparații de preț`,
       "sku": product.slug,
       "mpn": product.slug,
       "brand": {
         "@type": "Brand",
-        "name": "Nyxora"
+        "name": product.manufacturer || "Generic"
       },
       "image": product.image ? [product.image] : ["https://nyxora.ro/placeholder-product.svg"],
       "url": `https://nyxora.ro/products/${product.slug}`,
@@ -155,21 +185,28 @@ export default async function ProductPage({ params }) {
         "price": primaryOffer.price,
         "priceCurrency": primaryOffer.priceCurrency || "RON",
         "availability": "https://schema.org/InStock",
+        "url": `https://nyxora.ro/products/${product.slug}`,
+        "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         "seller": {
           "@type": "Organization",
-          "name": "Nyxora"
+          "name": "Nyxora",
+          "url": "https://nyxora.ro"
         }
       } : {
         "@type": "Offer",
         "availability": "https://schema.org/InStock",
+        "url": `https://nyxora.ro/products/${product.slug}`,
         "seller": {
           "@type": "Organization",
-          "name": "Nyxora"
+          "name": "Nyxora",
+          "url": "https://nyxora.ro"
         }
       },
       "aggregateRating": offersList.length > 0 ? {
         "@type": "AggregateRating",
         "ratingValue": "4.5",
+        "bestRating": "5",
+        "worstRating": "1",
         "reviewCount": "1"
       } : undefined
     };
