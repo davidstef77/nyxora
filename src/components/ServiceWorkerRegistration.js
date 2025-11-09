@@ -4,15 +4,16 @@ import { useEffect } from 'react';
 
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
+    const IS_PROD = typeof window !== 'undefined' && !/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
     if (
       typeof window !== 'undefined' &&
       'serviceWorker' in navigator &&
-      process.env.NODE_ENV === 'production'
+      IS_PROD
     ) {
       navigator.serviceWorker
         .register('/sw.js')
         .then(registration => {
-          if (process.env.NODE_ENV !== 'production') {
+          if (!IS_PROD) {
             console.log('[SW] Service Worker registered successfully:', registration.scope);
           }
           
@@ -45,14 +46,14 @@ export default function ServiceWorkerRegistration() {
 
       // Handle online/offline status
       const handleOnline = () => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (!IS_PROD) {
           console.log('[SW] App is online');
         }
         // Optionally show notification
       };
 
       const handleOffline = () => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (!IS_PROD) {
           console.log('[SW] App is offline');
         }
         // Optionally show notification

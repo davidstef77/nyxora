@@ -3,6 +3,16 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import RichTextEditor from './RichTextEditor';
 
+// Safe dev flag for browser-only without referencing process
+const DEV = typeof window !== 'undefined' && (() => {
+  try {
+    // enable by setting localStorage.debug = '1'
+    return window.localStorage && window.localStorage.getItem('debug') === '1';
+  } catch {
+    return false;
+  }
+})();
+
 function sanitizeKey(v) {
   if (!v) return '';
   let s = v.trim();
@@ -83,18 +93,18 @@ export default function AdminPanel() {
   const api = useApi(adminKey);
 
   function addBlogProductSlug(slug, { editing = false } = {}) {
-    if (process.env.NODE_ENV !== 'production') console.log('addBlogProductSlug called with:', slug, 'editing:', editing);
+    if (DEV) console.log('addBlogProductSlug called with:', slug, 'editing:', editing);
     if (!slug) return;
     const setFn = editing ? setEditingBlogProductSlugs : setBlogProductSlugs;
     setFn((prev) => {
       const next = Array.isArray(prev) ? [...prev] : [];
-      if (process.env.NODE_ENV !== 'production') console.log('Current slugs:', prev, 'adding:', slug);
+      if (DEV) console.log('Current slugs:', prev, 'adding:', slug);
       if (next.includes(slug)) {
-        if (process.env.NODE_ENV !== 'production') console.log('Slug already exists, not adding');
+        if (DEV) console.log('Slug already exists, not adding');
         return next;
       }
       next.push(slug);
-      if (process.env.NODE_ENV !== 'production') console.log('New slugs:', next);
+      if (DEV) console.log('New slugs:', next);
       return next;
     });
   }
@@ -123,22 +133,22 @@ export default function AdminPanel() {
   }
 
   const handleAttachBlogProductDraft = (product) => {
-    if (process.env.NODE_ENV !== 'production') console.log('handleAttachBlogProductDraft called with:', product);
+    if (DEV) console.log('handleAttachBlogProductDraft called with:', product);
     if (!product?.slug) {
-      if (process.env.NODE_ENV !== 'production') console.log('No product slug, returning');
+      if (DEV) console.log('No product slug, returning');
       return;
     }
-    if (process.env.NODE_ENV !== 'production') console.log('Adding product slug to draft:', product.slug);
+    if (DEV) console.log('Adding product slug to draft:', product.slug);
     addBlogProductSlug(product.slug);
   };
 
   const handleAttachBlogProductEdit = (product) => {
-    if (process.env.NODE_ENV !== 'production') console.log('handleAttachBlogProductEdit called with:', product);
+    if (DEV) console.log('handleAttachBlogProductEdit called with:', product);
     if (!product?.slug) {
-      if (process.env.NODE_ENV !== 'production') console.log('No product slug, returning');
+      if (DEV) console.log('No product slug, returning');
       return;
     }
-    if (process.env.NODE_ENV !== 'production') console.log('Adding product slug to edit:', product.slug);
+    if (DEV) console.log('Adding product slug to edit:', product.slug);
     addBlogProductSlug(product.slug, { editing: true });
   };
 

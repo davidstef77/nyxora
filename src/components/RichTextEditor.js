@@ -13,6 +13,11 @@ import TableHeader from "@tiptap/extension-table-header";
 
 const DEFAULT_PLACEHOLDER = "Scrie conținutul articolului aici...";
 
+// Browser-safe dev flag without referencing process
+const DEV = typeof window !== 'undefined' && (() => {
+  try { return window.localStorage && window.localStorage.getItem('debug') === '1'; } catch { return false; }
+})();
+
 const toolbarButtonClasses = "px-2 py-1 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-sm text-white transition";
 
 function ProductInsertControls({ products = [], onInsert }) {
@@ -23,20 +28,18 @@ function ProductInsertControls({ products = [], onInsert }) {
   ), [products]);
 
   const handleInsert = useCallback(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Product insert button clicked, selectedSlug:', selectedSlug);
-    }
+    if (DEV) console.log('Product insert button clicked, selectedSlug:', selectedSlug);
     if (!selectedSlug) {
-      if (process.env.NODE_ENV !== 'production') console.log('No selected slug, returning');
+      if (DEV) console.log('No selected slug, returning');
       return;
     }
     const product = products.find((p) => p.slug === selectedSlug);
-    if (process.env.NODE_ENV !== 'production') console.log('Found product:', product);
+    if (DEV) console.log('Found product:', product);
     if (!product) {
-      if (process.env.NODE_ENV !== 'production') console.log('Product not found, returning');
+      if (DEV) console.log('Product not found, returning');
       return;
     }
-    if (process.env.NODE_ENV !== 'production') console.log('Calling onInsert with product:', product);
+    if (DEV) console.log('Calling onInsert with product:', product);
     onInsert?.(product);
   }, [selectedSlug, onInsert, products]);
 

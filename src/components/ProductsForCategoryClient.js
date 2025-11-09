@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from './SmartImage';
 
+// Browser-safe dev flag
+const DEV = typeof window !== 'undefined' && (() => {
+  try { return window.localStorage && window.localStorage.getItem('debug') === '1'; } catch { return false; }
+})();
+
 export default function ProductsForCategoryClient({ categorySlug }) {
   // load products immediately when component mounts
   const [products, setProducts] = useState(null);
@@ -17,7 +22,7 @@ export default function ProductsForCategoryClient({ categorySlug }) {
       setProducts(json.products || []);
     } catch (err) {
       // keep console.error for debugging server-side; client errors are OK to surface in dev
-      if (process.env.NODE_ENV !== 'production') console.error('loadProducts error', err);
+      if (DEV) console.error('loadProducts error', err);
       setProducts([]);
     } finally {
       setLoading(false);

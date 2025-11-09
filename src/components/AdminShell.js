@@ -135,13 +135,19 @@ function QuickStats({ stats, loading }) {
   );
 }
 
-export default function AdminShell() {
+export default function AdminShell({ initialCounts = {}, session: serverSession }) {
   const [section, setSection] = useState('overview');
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState({
+    products: initialCounts.products || 0,
+    categories: initialCounts.categories || 0,
+    blogs: initialCounts.blogs || 0,
+    tops: initialCounts.tops || 0
+  });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [adminKey, setAdminKey] = useState('');
   const { data: session } = useSession();
+  const effectiveSession = session || serverSession;
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: '📊' },
@@ -272,7 +278,7 @@ export default function AdminShell() {
             Logged in as
           </div>
           <div style={{ fontWeight: '600', color: '#fff', marginBottom: '12px' }}>
-            {session?.user?.name || 'Admin'}
+            {effectiveSession?.user?.name || 'Admin'}
           </div>
           <button
             className="action-btn error"
