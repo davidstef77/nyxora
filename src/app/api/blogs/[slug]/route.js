@@ -1,24 +1,6 @@
 import connect from '../../lib/db';
 import Blog from '../../lib/models/Blog';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
-
-function cleanKey(value) {
-  if (!value) return '';
-  return value.replace(/^['"]+|['"]+$/g, '').trim();
-}
-
-async function isAuthorized(request) {
-  const session = await getServerSession(authOptions);
-  if (session?.user?.role === 'admin') return true;
-  const envKey = cleanKey(process.env.ADMIN_KEY);
-  if (envKey) {
-    const headerKey = cleanKey(request.headers.get('x-admin-key'));
-    return headerKey && headerKey === envKey;
-  }
-
-  return false;
-}
+import { isAuthorized } from '../../../../lib/auth';
 
 export async function GET(request, { params }) {
   try {

@@ -1,20 +1,10 @@
 import connect from '../lib/db';
 import Product from '../lib/models/Product';
 import Category from '../lib/models/Category';
-
-function sanitizeKey(v) {
-  if (!v) return '';
-  let s = String(v).trim();
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-    s = s.slice(1, -1).trim();
-  }
-  return s;
-}
+import { isAuthorized } from '../../../lib/auth';
 
 export async function POST(request) {
-  const adminKey = sanitizeKey(request.headers.get('x-admin-key'));
-  const envKey = sanitizeKey(process.env.ADMIN_KEY);
-  if (envKey && envKey !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

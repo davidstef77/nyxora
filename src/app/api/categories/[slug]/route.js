@@ -1,15 +1,7 @@
 import connect from '../../lib/db';
 import Category from '../../lib/models/Category';
 import { revalidatePath } from 'next/cache';
-
-function sanitizeKey(v) {
-  if (!v) return '';
-  let s = String(v).trim();
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-    s = s.slice(1, -1).trim();
-  }
-  return s;
-}
+import { isAuthorized } from '../../../../lib/auth';
 
 export async function GET(request, { params }) {
   await connect();
@@ -20,8 +12,7 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const adminKey = request.headers.get('x-admin-key');
-  if (process.env.ADMIN_KEY && process.env.ADMIN_KEY !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
@@ -43,13 +34,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const url = new URL(request.url);
-  // Support both header x-admin-key and legacy ?adminKey= query param
-  const headerKey = sanitizeKey(request.headers.get('x-admin-key'));
-  const queryKey = sanitizeKey(url.searchParams.get('adminKey'));
-  const providedKey = headerKey || queryKey;
-  const envKey = sanitizeKey(process.env.ADMIN_KEY);
-  if (envKey && envKey !== providedKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

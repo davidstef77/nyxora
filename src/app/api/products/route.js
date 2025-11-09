@@ -1,6 +1,7 @@
 import connect from '../lib/db';
 import Product from '../lib/models/Product';
 import { revalidatePath } from 'next/cache';
+import { isAuthorized } from '../../../lib/auth';
 
 /**
  * GET: list products, optionally filtered by ?category=slug
@@ -54,9 +55,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  // header-based admin key
-  const adminKey = request.headers.get('x-admin-key');
-  if (process.env.ADMIN_KEY && process.env.ADMIN_KEY !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import connect from '../../lib/db';
 import Product from '../../lib/models/Product';
 import { revalidatePath } from 'next/cache';
+import { isAuthorized } from '../../../../lib/auth';
 
 export async function GET(request, { params }) {
   try {
@@ -16,8 +17,7 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const adminKey = request.headers.get('x-admin-key');
-  if (process.env.ADMIN_KEY && process.env.ADMIN_KEY !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
@@ -48,8 +48,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const adminKey = request.headers.get('x-admin-key');
-  if (process.env.ADMIN_KEY && process.env.ADMIN_KEY !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

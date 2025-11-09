@@ -1,6 +1,7 @@
 import connect from '../lib/db';
 import Category from '../lib/models/Category';
 import { revalidatePath } from 'next/cache';
+import { isAuthorized } from '../../../lib/auth';
 
 export async function GET() {
   await connect();
@@ -9,8 +10,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const adminKey = request.headers.get('x-admin-key');
-  if (process.env.ADMIN_KEY && process.env.ADMIN_KEY !== adminKey) {
+  if (!(await isAuthorized(request))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
