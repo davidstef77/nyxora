@@ -19,8 +19,8 @@ export const metadata = {
     siteName: 'Nyxora',
     title: 'Blog Tech - Articole și Recenzii | Nyxora',
     description: 'Descoperă cele mai noi articole despre tehnologie, recenzii și ghiduri pe blogul Nyxora.',
-    url: 'https://nyxora.ro/blog',
-    images: [{ url: 'https://nyxora.ro/og-image.png', width: 1200, height: 630 }],
+  url: 'https://www.nyxora.ro/blog',
+  images: [{ url: 'https://www.nyxora.ro/og-image.png', width: 1200, height: 630 }],
     locale: 'ro_RO'
   },
   twitter: {
@@ -28,10 +28,10 @@ export const metadata = {
     site: '@nyxora',
     title: 'Blog Tech - Nyxora',
     description: 'Articole despre tehnologie, recenzii și ghiduri pe blogul Nyxora.',
-    images: ['https://nyxora.ro/og-image.png']
+    images: ['https://www.nyxora.ro/og-image.png']
   },
   alternates: {
-    canonical: 'https://nyxora.ro/blog'
+    canonical: 'https://www.nyxora.ro/blog'
   },
   robots: 'index,follow,max-snippet:-1,max-image-preview:large'
 };
@@ -42,25 +42,25 @@ export default async function BlogListPage() {
     const blogs = await Blog.find({ published: true }).sort({ publishedAt: -1, createdAt: -1 }).lean();
 
     // Structured data for blog list
-    const blogListJsonLd = {
+  const blogListJsonLd = {
       "@context": "https://schema.org",
       "@type": "Blog",
       "name": "Nyxora Blog",
       "description": "Blog cu articole despre tehnologie, recenzii produse și ghiduri",
-      "url": "https://nyxora.ro/blog",
+  "url": "https://www.nyxora.ro/blog",
       "publisher": {
         "@type": "Organization",
         "name": "Nyxora",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://nyxora.ro/logo.png"
+          "url": "https://www.nyxora.ro/logo.png"
         }
       },
       "blogPost": blogs.map(blog => ({
         "@type": "BlogPosting",
         "headline": blog.title,
         "description": blog.excerpt || '',
-        "url": `https://nyxora.ro/blog/${blog.slug}`,
+  "url": `https://www.nyxora.ro/blog/${blog.slug}`,
         "datePublished": blog.publishedAt ? new Date(blog.publishedAt).toISOString() : undefined,
         "author": {
           "@type": "Person",

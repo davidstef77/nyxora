@@ -43,8 +43,9 @@ export async function generateMetadata({ params }) {
       ? `${prod.description.slice(0, 140)}... Găsește cele mai bune oferte pentru ${prod.name} pe Nyxora.`
       : `Descoperă ${prod.name} pe Nyxora. Compară prețuri și găsește cele mai bune oferte.`;
     
-    const canonical = `https://nyxora.ro/products/${prod.slug}`;
-    const ogImages = prod.image ? [{ url: prod.image, width: 1200, height: 630 }] : [{ url: 'https://nyxora.ro/og-image.png', width: 1200, height: 630 }];
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro';
+  const canonical = `${base}/products/${prod.slug}`;
+  const ogImages = prod.image ? [{ url: prod.image, width: 1200, height: 630 }] : [{ url: `${base}/og-image.png`, width: 1200, height: 630 }];
 
     return {
       title,

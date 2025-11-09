@@ -15,11 +15,9 @@ export async function GET(request) {
   // Prefer an explicit public base URL, otherwise use the request origin so
   // the sitemap reflects the hostname the client used (helps Search Console),
   // then fallback to VERCEL_URL and finally a hardcoded default.
-  const requestOrigin = request ? new URL(request.url).origin : null;
-  const base = process.env.NEXT_PUBLIC_BASE_URL || requestOrigin ||
-          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-          'https://nyxora.ro';
-  const baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
+  // Force canonical host to www.nyxora.ro regardless of deployment host to avoid duplicate host indexing
+  const forcedHost = 'https://www.nyxora.ro';
+  const baseUrl = forcedHost;
 
     const urls = [
       { 
@@ -48,33 +46,45 @@ export async function GET(request) {
       }
     ];
 
-    products.forEach((p) => urls.push({ 
-      loc: `${baseUrl}/products/${p.slug}`, 
-      lastmod: (p.updatedAt || new Date()).toISOString(), 
-      priority: 0.8,
-      changefreq: 'weekly'
-    }));
+    products.forEach((p) => {
+      if (!p.slug) return;
+      urls.push({ 
+        loc: `${baseUrl}/products/${p.slug}`, 
+        lastmod: (p.updatedAt || new Date()).toISOString(), 
+        priority: 0.8,
+        changefreq: 'weekly'
+      });
+    });
     
-    categories.forEach((c) => urls.push({ 
-      loc: `${baseUrl}/categories/${c.slug}`, 
-      lastmod: (c.updatedAt || new Date()).toISOString(), 
-      priority: 0.7,
-      changefreq: 'weekly'
-    }));
+    categories.forEach((c) => {
+      if (!c.slug) return;
+      urls.push({ 
+        loc: `${baseUrl}/categories/${c.slug}`, 
+        lastmod: (c.updatedAt || new Date()).toISOString(), 
+        priority: 0.7,
+        changefreq: 'weekly'
+      });
+    });
     
-    blogs.forEach((b) => urls.push({ 
-      loc: `${baseUrl}/blog/${b.slug}`, 
-      lastmod: (b.updatedAt || b.publishedAt || new Date()).toISOString(), 
-      priority: 0.6,
-      changefreq: 'monthly'
-    }));
+    blogs.forEach((b) => {
+      if (!b.slug) return;
+      urls.push({ 
+        loc: `${baseUrl}/blog/${b.slug}`, 
+        lastmod: (b.updatedAt || b.publishedAt || new Date()).toISOString(), 
+        priority: 0.6,
+        changefreq: 'monthly'
+      });
+    });
     
-    tops.forEach((t) => urls.push({ 
-      loc: `${baseUrl}/tops/${t.slug}`, 
-      lastmod: (t.updatedAt || t.publishedAt || new Date()).toISOString(), 
-      priority: 0.7,
-      changefreq: 'weekly'
-    }));
+    tops.forEach((t) => {
+      if (!t.slug) return;
+      urls.push({ 
+        loc: `${baseUrl}/tops/${t.slug}`, 
+        lastmod: (t.updatedAt || t.publishedAt || new Date()).toISOString(), 
+        priority: 0.7,
+        changefreq: 'weekly'
+      });
+    });
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

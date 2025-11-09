@@ -16,12 +16,12 @@ export const metadata = {
   title: 'Nyxora - Laptopuri, Telefoane, Componente PC | Oferte și Recenzii',
   description: 'Descoperă cele mai bune laptopuri, telefoane, procesoare, plăci video și componente PC. Vezi topuri, recenzii și oferte actualizate zilnic.',
   alternates: {
-    canonical: 'https://nyxora.ro'
+    canonical: 'https://www.nyxora.ro'
   },
   openGraph: {
     title: 'Nyxora - Laptopuri, Telefoane, Componente PC',
     description: 'Descoperă cele mai bune laptopuri, telefoane, procesoare, plăci video și componente PC. Vezi topuri, recenzii și oferte actualizate zilnic.',
-    url: 'https://nyxora.ro',
+    url: 'https://www.nyxora.ro',
     type: 'website',
     siteName: 'Nyxora'
   },

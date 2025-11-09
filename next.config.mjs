@@ -114,6 +114,20 @@ const nextConfig = {
 		];
 	},
 
+	// Redirects to enforce canonical host (www.nyxora.ro)
+	async redirects() {
+		return [
+			{
+				source: '/:path*',
+				destination: 'https://www.nyxora.ro/:path*',
+				permanent: true,
+				has: [
+					{ type: 'host', value: 'nyxora.ro' }
+				]
+			}
+		];
+	},
+
 	turbopack: {
 		root: 'D:/it/pcaffiliate'
 	}
