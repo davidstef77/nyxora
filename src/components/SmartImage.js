@@ -41,6 +41,7 @@ function SmartImage({
 }) {
   const [errored, setErrored] = useState(false);
   const normalized = normalizeSrc(src);
+  const sizesForFill = rest?.sizes || '100vw';
 
   // Dacă nu este specificat loading și avem priority, folosește 'eager'
   const effectiveLoading = loading || (priority ? 'eager' : 'lazy');
@@ -57,6 +58,7 @@ function SmartImage({
           fill 
           className={className} 
           style={style}
+          sizes={sizesForFill}
           loading="lazy"
           quality={50}
         />
@@ -90,6 +92,7 @@ function SmartImage({
           unoptimized={true}
           loading={effectiveLoading}
           priority={priority}
+          sizes={sizesForFill}
           quality={quality}
           {...rest}
         />
@@ -126,6 +129,7 @@ function SmartImage({
         onError={() => setErrored(true)}
         loading={effectiveLoading}
         priority={priority}
+        sizes={sizesForFill}
         quality={quality}
         placeholder={placeholder}
         blurDataURL={blurDataURL}
