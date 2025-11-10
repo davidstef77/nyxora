@@ -24,13 +24,21 @@ function sanitizeKey(v) {
 }
 
 function useApi(adminKey) {
-  const headers = {};
+  const baseHeaders = {};
   const clean = sanitizeKey(adminKey);
-  if (clean) headers['x-admin-key'] = clean;
+  if (clean) baseHeaders['x-admin-key'] = clean;
 
   async function fetchJSON(path, opts = {}) {
     try {
-      const res = await fetch(path, { headers, ...opts });
+      // Merge caller headers with baseHeaders without losing x-admin-key
+      const callerHeaders = opts.headers || {};
+      const mergedHeaders = { ...baseHeaders, ...callerHeaders };
+      // If a JSON string body is provided and no explicit Content-Type, add it
+      if (opts.body && typeof opts.body === 'string' && !Object.keys(mergedHeaders).some(h => h.toLowerCase() === 'content-type')) {
+        mergedHeaders['Content-Type'] = 'application/json';
+      }
+      const fetchOptions = { ...opts, headers: mergedHeaders };
+      const res = await fetch(path, fetchOptions);
       const text = await res.text();
       
       if (!res.ok) {
@@ -305,10 +313,9 @@ export default function AdminPanel() {
   }
 
   async function deleteCategory(slug) {
-    // categories delete endpoint expects adminKey as query param in current implementation
+    // unified authorization now uses x-admin-key header
     const key = sanitizeKey(adminKey);
-    const url = '/api/categories/' + encodeURIComponent(slug) + (key ? ('?adminKey=' + encodeURIComponent(key)) : '');
-    const res = await fetch(url, { method: 'DELETE' });
+    const res = await fetch('/api/categories/' + encodeURIComponent(slug), { method: 'DELETE', headers: key ? { 'x-admin-key': key } : {} });
     if (!res.ok) setError('Delete failed: ' + res.status);
     else loadAll();
   }
