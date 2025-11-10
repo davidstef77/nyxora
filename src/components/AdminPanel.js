@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import RichTextEditor from './RichTextEditor';
 
 // Safe dev flag for browser-only without referencing process
@@ -228,18 +228,28 @@ export default function AdminPanel() {
     );
   };
 
-  const loadAll = useCallback(async () => {
+  const lastLoadRef = useRef(0);
+  const loadAll = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Throttle to once per minute unless force=true
+    if (!force && now - lastLoadRef.current < 60000) {
+      if (DEV) console.log('loadAll throttled: only one call per minute allowed');
+      // Provide gentle feedback without overriding existing error states
+      setError(prev => prev || 'Refreshed too soon. Please wait a moment before trying again.');
+      return;
+    }
+    lastLoadRef.current = now;
     setLoading(true);
     setError('');
     try {
       const data = await api.fetchJSON('/api/data');
-      
+
       if (data.error) {
         throw new Error(data.error);
       }
-      
+
       setCategories(Array.isArray(data.categories) ? data.categories : []);
-      
+
       // If /api/data doesn't return featuredProducts, fall back to full products list
       let productsList = Array.isArray(data.featuredProducts) && data.featuredProducts.length ? data.featuredProducts : [];
       if (!productsList.length) {
@@ -257,7 +267,7 @@ export default function AdminPanel() {
         }
       }
       setProducts(productsList);
-      
+
       // load blogs and tops separately (public lists)
       try {
         const b = await api.fetchJSON('/api/blogs?published=0');
@@ -271,7 +281,7 @@ export default function AdminPanel() {
         console.warn('Failed to load blogs:', e);
         setBlogs([]);
       }
-      
+
       try {
         const t = await api.fetchJSON('/api/tops?published=0');
         if (t.error) {
@@ -308,7 +318,7 @@ export default function AdminPanel() {
     if (res.error) setError(res.error);
     else {
       form.reset();
-      loadAll();
+      loadAll(true);
     }
   }
 
@@ -317,7 +327,7 @@ export default function AdminPanel() {
     const key = sanitizeKey(adminKey);
     const res = await fetch('/api/categories/' + encodeURIComponent(slug), { method: 'DELETE', headers: key ? { 'x-admin-key': key } : {} });
     if (!res.ok) setError('Delete failed: ' + res.status);
-    else loadAll();
+    else loadAll(true);
   }
 
   async function saveCategoryEdit(e) {
@@ -331,7 +341,7 @@ export default function AdminPanel() {
     };
     const target = editingCategory && editingCategory.originalSlug ? editingCategory.originalSlug : (editingCategory && editingCategory.slug);
     const res = await api.fetchJSON('/api/categories/' + encodeURIComponent(target), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.error) setError('Update failed: ' + res.error); else { setEditingCategory(null); loadAll(); }
+    if (res.error) setError('Update failed: ' + res.error); else { setEditingCategory(null); loadAll(true); }
   }
 
   async function createProduct(e) {
@@ -352,7 +362,7 @@ export default function AdminPanel() {
     if (res.error) setError(res.error);
     else {
       form.reset();
-      loadAll();
+      loadAll(true);
     }
   }
 
@@ -360,7 +370,7 @@ export default function AdminPanel() {
     const key = sanitizeKey(adminKey);
     const res = await fetch('/api/products/' + encodeURIComponent(slug), { method: 'DELETE', headers: { 'x-admin-key': key } });
     if (!res.ok) setError('Delete failed: ' + res.status);
-    else loadAll();
+    else loadAll(true);
   }
 
   // --- Blogs ---
@@ -393,7 +403,7 @@ export default function AdminPanel() {
     }
     const res = await api.fetchJSON('/api/blogs', { method: 'POST', body: JSON.stringify(body) });
     if (res.error) setError(res.error);
-    else { form.reset(); setBlogContentDraft(''); setBlogProductSlugs([]); loadAll(); }
+    else { form.reset(); setBlogContentDraft(''); setBlogProductSlugs([]); loadAll(true); }
   }
 
 
@@ -401,7 +411,7 @@ export default function AdminPanel() {
     const key = sanitizeKey(adminKey);
     const res = await fetch('/api/blogs/' + encodeURIComponent(slug), { method: 'DELETE', headers: { 'x-admin-key': key } });
     if (!res.ok) setError('Delete failed: ' + res.status);
-    else loadAll();
+    else loadAll(true);
   }
 
   async function saveBlogEdit(e) {
@@ -433,7 +443,7 @@ export default function AdminPanel() {
     }
     const target = editingBlog && (editingBlog.originalSlug || editingBlog.slug);
     const res = await api.fetchJSON('/api/blogs/' + encodeURIComponent(target), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.error) setError('Update failed: ' + res.error); else { setEditingBlog(null); setEditingBlogContent(''); setEditingBlogProductSlugs([]); loadAll(); }
+    if (res.error) setError('Update failed: ' + res.error); else { setEditingBlog(null); setEditingBlogContent(''); setEditingBlogProductSlugs([]); loadAll(true); }
   }
 
   // --- Tops ---
@@ -459,14 +469,14 @@ export default function AdminPanel() {
     const body = { title, slug, description, items, published };
     const res = await api.fetchJSON('/api/tops', { method: 'POST', body: JSON.stringify(body) });
     if (res.error) setError(res.error);
-    else { form.reset(); setTopItems([]); loadAll(); }
+    else { form.reset(); setTopItems([]); loadAll(true); }
   }
 
   async function deleteTop(slug) {
     const key = sanitizeKey(adminKey);
     const res = await fetch('/api/tops/' + encodeURIComponent(slug), { method: 'DELETE', headers: { 'x-admin-key': key } });
     if (!res.ok) setError('Delete failed: ' + res.status);
-    else loadAll();
+    else loadAll(true);
   }
 
   async function saveTopEdit(e) {
@@ -490,7 +500,7 @@ export default function AdminPanel() {
     const body = { title, slug, description, items, published };
     const target = editingTop && (editingTop.originalSlug || editingTop.slug);
     const res = await api.fetchJSON('/api/tops/' + encodeURIComponent(target), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.error) setError('Update failed: ' + res.error); else { setEditingTop(null); setEditingTopItems([]); loadAll(); }
+    if (res.error) setError('Update failed: ' + res.error); else { setEditingTop(null); setEditingTopItems([]); loadAll(true); }
   }
 
   // Helpers for managing top items in the UI
@@ -681,8 +691,8 @@ export default function AdminPanel() {
                 fontSize: '14px'
               }} 
             />
-            <button 
-              onClick={loadAll} 
+              <button 
+              onClick={() => loadAll()} 
               disabled={loading}
               style={{ 
                 padding: '12px 20px',
