@@ -10,18 +10,18 @@ export const metadata = {
   title: 'Top Produse - Recomandări Expert | Nyxora',
   description: 'Descoperă topurile noastre cu cele mai bune produse tech: laptopuri, telefoane, componente PC, periferice și multe altele. Recomandări bazate pe teste și analize detaliate.',
   keywords: 'top produse, recomandări produse, cele mai bune laptopuri, top telefoane, componente PC, top gaming, produse tech, comparație produse',
-  authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
+  authors: [{ name: 'Echipa Nyxora', url: 'https://www.nyxora.ro' }],
   alternates: {
-    canonical: 'https://nyxora.ro/tops'
+    canonical: 'https://www.nyxora.ro/tops'
   },
   openGraph: {
     title: 'Top Produse - Recomandări Expert | Nyxora',
     description: 'Descoperă topurile noastre cu cele mai bune produse tech selectate și testate de experții Nyxora.',
-    url: 'https://nyxora.ro/tops',
+    url: 'https://www.nyxora.ro/tops',
     type: 'website',
     images: [
       {
-        url: 'https://nyxora.ro/og-image.png',
+        url: 'https://www.nyxora.ro/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Top Produse Nyxora',
@@ -39,7 +39,7 @@ export const metadata = {
     description: 'Cele mai bune produse tech selectate și testate de experții Nyxora.',
     images: [
       {
-        url: 'https://nyxora.ro/og-image.png',
+        url: 'https://www.nyxora.ro/og-image.png',
         alt: 'Top Produse Nyxora'
       }
     ]
@@ -70,15 +70,15 @@ export default async function TopsListPage() {
       "@type": "CollectionPage",
       "name": "Top Produse Nyxora",
       "description": "Colecție de topuri cu cele mai bune produse tech",
-      "url": "https://nyxora.ro/tops",
+      "url": "https://www.nyxora.ro/tops",
       "inLanguage": "ro-RO",
       "publisher": {
         "@type": "Organization",
         "name": "Nyxora",
-        "url": "https://nyxora.ro",
+        "url": "https://www.nyxora.ro",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://nyxora.ro/logo.png",
+          "url": "https://www.nyxora.ro/logo.png",
           "width": 250,
           "height": 60
         }
@@ -88,7 +88,7 @@ export default async function TopsListPage() {
         "itemListElement": tops.map((top, index) => ({
           "@type": "ListItem",
           "position": index + 1,
-          "url": `https://nyxora.ro/tops/${top.slug}`,
+          "url": `https://www.nyxora.ro/tops/${top.slug}`,
           "name": top.title,
           "description": top.description
         }))

@@ -37,11 +37,11 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro';
     const canonical = `${baseUrl}/tops/${top.slug}`;
     const title = `${top.title} | Top Produse Nyxora`;
     const description = top.description || `Descoperă ${top.title} - cele mai bune produse selectate și recomandate de experții Nyxora. Compară prețuri și caracteristici.`;
-    const image = top.image || 'https://nyxora.ro/og-image.png';
+  const image = top.image || 'https://www.nyxora.ro/og-image.png';
     const publishedTime = top.publishedAt ? new Date(top.publishedAt).toISOString() : undefined;
     const modifiedTime = top.updatedAt ? new Date(top.updatedAt).toISOString() : publishedTime;
     
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: topKeywords.join(', '),
-      authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
+  authors: [{ name: 'Echipa Nyxora', url: 'https://www.nyxora.ro' }],
       alternates: {
         canonical
       },
@@ -282,20 +282,20 @@ export default async function TopDetail({ params }) {
                 "@type": "ItemList",
                 "name": top.title,
                 "description": top.description,
-                "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/tops/${top.slug}`,
+                "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro'}/tops/${top.slug}`,
                 "numberOfItems": sortedItems.length,
                 "author": {
                   "@type": "Organization",
                   "name": "Nyxora",
-                  "url": "https://nyxora.ro"
+                  "url": "https://www.nyxora.ro"
                 },
                 "publisher": {
                   "@type": "Organization",
                   "name": "Nyxora",
-                  "url": "https://nyxora.ro",
+                  "url": "https://www.nyxora.ro",
                   "logo": {
                     "@type": "ImageObject",
-                    "url": "https://nyxora.ro/logo.png",
+                    "url": "https://www.nyxora.ro/logo.png",
                     "width": 250,
                     "height": 60
                   }
@@ -314,7 +314,7 @@ export default async function TopDetail({ params }) {
                       "@type": "Product",
                       "name": product.name,
                       "description": product.description || item.customNote || '',
-                      "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/products/${product.slug}`,
+                      "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro'}/products/${product.slug}`,
                       ...(imageSrc && { "image": imageSrc }),
                       ...(product.price && { 
                         "offers": { 
@@ -322,7 +322,7 @@ export default async function TopDetail({ params }) {
                           "price": product.price, 
                           "priceCurrency": "RON",
                           "availability": "https://schema.org/InStock",
-                          "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro'}/products/${product.slug}`
+                          "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro'}/products/${product.slug}`
                         } 
                       }),
                       ...(product.manufacturer && {

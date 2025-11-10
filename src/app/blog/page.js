@@ -13,16 +13,16 @@ export const metadata = {
   title: 'Blog Tech - Articole și Recenzii | Nyxora',
   description: 'Citește articolele noastre despre tehnologie, recenzii de produse, ghiduri de cumpărare și sfaturi pentru componente PC, laptopuri și gadget-uri. Află ultimele noutăți din lumea tech.',
   keywords: 'blog tech, articole tehnologie, recenzii produse, ghiduri PC, sfaturi tech, componente PC, laptopuri, gadget-uri, noutăți tech',
-  authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
+  authors: [{ name: 'Echipa Nyxora', url: 'https://www.nyxora.ro' }],
   openGraph: {
     type: 'website',
     siteName: 'Nyxora',
     title: 'Blog Tech - Articole și Recenzii | Nyxora',
     description: 'Descoperă cele mai noi articole despre tehnologie, recenzii detaliate și ghiduri practice pe blogul Nyxora.',
-    url: 'https://nyxora.ro/blog',
+    url: 'https://www.nyxora.ro/blog',
     images: [
       { 
-        url: 'https://nyxora.ro/og-image.png', 
+        url: 'https://www.nyxora.ro/og-image.png', 
         width: 1200, 
         height: 630,
         alt: 'Blog Nyxora - Articole Tech și Recenzii',
@@ -39,13 +39,13 @@ export const metadata = {
     description: 'Articole despre tehnologie, recenzii produse și ghiduri practice pe blogul Nyxora.',
     images: [
       {
-        url: 'https://nyxora.ro/og-image.png',
+        url: 'https://www.nyxora.ro/og-image.png',
         alt: 'Blog Nyxora'
       }
     ]
   },
   alternates: {
-    canonical: 'https://nyxora.ro/blog'
+    canonical: 'https://www.nyxora.ro/blog'
   },
   robots: {
     index: true,
@@ -67,15 +67,15 @@ export default async function BlogListPage() {
       "@type": "Blog",
       "name": "Nyxora Blog",
       "description": "Blog cu articole despre tehnologie, recenzii produse și ghiduri de cumpărare",
-      "url": "https://nyxora.ro/blog",
+      "url": "https://www.nyxora.ro/blog",
       "inLanguage": "ro-RO",
       "publisher": {
         "@type": "Organization",
         "name": "Nyxora",
-        "url": "https://nyxora.ro",
+        "url": "https://www.nyxora.ro",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://nyxora.ro/logo.png",
+          "url": "https://www.nyxora.ro/logo.png",
           "width": 250,
           "height": 60
         }
@@ -84,23 +84,23 @@ export default async function BlogListPage() {
         "@type": "BlogPosting",
         "headline": blog.title,
         "description": blog.excerpt || '',
-        "url": `https://nyxora.ro/blog/${blog.slug}`,
+        "url": `https://www.nyxora.ro/blog/${blog.slug}`,
         "datePublished": blog.publishedAt ? new Date(blog.publishedAt).toISOString() : undefined,
         "dateModified": blog.updatedAt ? new Date(blog.updatedAt).toISOString() : undefined,
         "author": {
           "@type": "Person",
           "name": blog.author || "Echipa Nyxora",
-          "url": "https://nyxora.ro"
+          "url": "https://www.nyxora.ro"
         },
-        "image": blog.image || "https://nyxora.ro/og-image.png",
+        "image": blog.image || "https://www.nyxora.ro/og-image.png",
         "publisher": {
           "@type": "Organization",
           "name": "Nyxora",
-          "url": "https://nyxora.ro"
+          "url": "https://www.nyxora.ro"
         },
         "mainEntityOfPage": {
           "@type": "WebPage",
-          "@id": `https://nyxora.ro/blog/${blog.slug}`
+          "@id": `https://www.nyxora.ro/blog/${blog.slug}`
         }
       }))
     };

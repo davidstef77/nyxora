@@ -26,8 +26,8 @@ export async function generateMetadata({ params }) {
 
     const title = `${b.title} | Blog Nyxora`;
     const description = b.excerpt || (b.content ? b.content.replace(/<[^>]*>/g, '').substring(0, 155) + '...' : 'Citește articolul complet pe blogul Nyxora.');
-    const url = `https://nyxora.ro/blog/${b.slug}`;
-    const image = b.image || 'https://nyxora.ro/og-image.png';
+  const url = `https://www.nyxora.ro/blog/${b.slug}`;
+  const image = b.image || 'https://www.nyxora.ro/og-image.png';
     const publishedTime = b.publishedAt ? new Date(b.publishedAt).toISOString() : undefined;
     const modifiedTime = b.updatedAt ? new Date(b.updatedAt).toISOString() : publishedTime;
     const author = b.author || 'Echipa Nyxora';
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: articleKeywords.join(', '),
-      authors: [{ name: author, url: 'https://nyxora.ro' }],
+  authors: [{ name: author, url: 'https://www.nyxora.ro' }],
       openGraph: {
         title: b.title,
         description,
@@ -130,29 +130,29 @@ export default async function BlogDetail({ params }) {
       "@type": "BlogPosting",
       "headline": b.title,
       "description": b.excerpt || '',
-      "image": b.image ? [b.image] : ["https://nyxora.ro/og-image.png"],
+  "image": b.image ? [b.image] : ["https://www.nyxora.ro/og-image.png"],
       "author": {
         "@type": "Person",
         "name": b.author || "Echipa Nyxora",
-        "url": "https://nyxora.ro"
+  "url": "https://www.nyxora.ro"
       },
       "publisher": {
         "@type": "Organization",
         "name": "Nyxora",
-        "url": "https://nyxora.ro",
+        "url": "https://www.nyxora.ro",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://nyxora.ro/logo.png",
+          "url": "https://www.nyxora.ro/logo.png",
           "width": 250,
           "height": 60
         }
       },
       "datePublished": b.publishedAt ? new Date(b.publishedAt).toISOString() : undefined,
       "dateModified": b.updatedAt ? new Date(b.updatedAt).toISOString() : (b.publishedAt ? new Date(b.publishedAt).toISOString() : undefined),
-      "url": `https://nyxora.ro/blog/${b.slug}`,
+  "url": `https://www.nyxora.ro/blog/${b.slug}`,
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://nyxora.ro/blog/${b.slug}`
+        "@id": `https://www.nyxora.ro/blog/${b.slug}`
       },
       "keywords": Array.isArray(b.tags) ? b.tags.join(', ') : '',
       "articleSection": "Tehnologie",

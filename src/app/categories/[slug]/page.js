@@ -32,7 +32,7 @@ import '../categories.css';
 export async function generateMetadata({ params }) {
   try {
     const { category } = await getData(params.slug);
-    const base = 'https://www.nyxora.ro';
+  const base = 'https://www.nyxora.ro'; // unified canonical host
 
     if (!category) {
       return {

@@ -14,16 +14,16 @@ export const metadata = {
   title: 'Produse Tech - Recenzii și Comparații | Nyxora',
   description: 'Descoperă cele mai bune produse tech pe Nyxora. Recenzii detaliate, comparații de preț și recomandări pentru componente PC, laptopuri, periferice și multe altele.',
   keywords: 'produse tech, recenzii, comparații preț, componente PC, laptopuri, periferice, recomandări produse, gadget-uri',
-  authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
+  authors: [{ name: 'Echipa Nyxora', url: 'https://www.nyxora.ro' }],
   openGraph: {
     type: 'website',
     siteName: 'Nyxora',
     title: 'Produse Tech - Recenzii și Comparații | Nyxora',
     description: 'Găsește cele mai bune produse tech cu recenzii detaliate și comparații de preț pe Nyxora.',
-    url: 'https://nyxora.ro/products',
+    url: 'https://www.nyxora.ro/products',
     images: [
       { 
-        url: 'https://nyxora.ro/og-image.png', 
+        url: 'https://www.nyxora.ro/og-image.png', 
         width: 1200, 
         height: 630,
         alt: 'Produse Nyxora',
@@ -40,13 +40,13 @@ export const metadata = {
     description: 'Descoperă cele mai bune produse tech cu recenzii și comparații de preț.',
     images: [
       {
-        url: 'https://nyxora.ro/og-image.png',
+        url: 'https://www.nyxora.ro/og-image.png',
         alt: 'Produse Nyxora'
       }
     ]
   },
   alternates: {
-    canonical: 'https://nyxora.ro/products'
+    canonical: 'https://www.nyxora.ro/products'
   },
   robots: {
     index: true,

@@ -49,7 +49,7 @@ export async function generateMetadata({ params }) {
       ? `${prod.description.slice(0, 145)}... Compară prețuri și găsește oferte pentru ${prod.name}.`
       : `Descoperă ${prod.name} pe Nyxora. Compară prețuri și găsește cele mai bune oferte disponibile.`;
     
-    const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyxora.ro';
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nyxora.ro';
     const canonical = `${base}/products/${prod.slug}`;
     const imageUrl = prod.image || `${base}/og-image.png`;
     const ogImages = [
@@ -72,8 +72,7 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: productKeywords.join(', '),
-      authors: [{ name: 'Echipa Nyxora', url: 'https://nyxora.ro' }],
-      canonical,
+      authors: [{ name: 'Echipa Nyxora', url: 'https://www.nyxora.ro' }],
       alternates: {
         canonical
       },
@@ -178,28 +177,28 @@ export default async function ProductPage({ params }) {
         "@type": "Brand",
         "name": product.manufacturer || "Generic"
       },
-      "image": product.image ? [product.image] : ["https://nyxora.ro/placeholder-product.svg"],
-      "url": `https://nyxora.ro/products/${product.slug}`,
+      "image": product.image ? [product.image] : ["https://www.nyxora.ro/placeholder-product.svg"],
+      "url": `https://www.nyxora.ro/products/${product.slug}`,
       "offers": primaryOffer ? {
         "@type": "Offer",
         "price": primaryOffer.price,
         "priceCurrency": primaryOffer.priceCurrency || "RON",
         "availability": "https://schema.org/InStock",
-        "url": `https://nyxora.ro/products/${product.slug}`,
+        "url": `https://www.nyxora.ro/products/${product.slug}`,
         "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         "seller": {
           "@type": "Organization",
           "name": "Nyxora",
-          "url": "https://nyxora.ro"
+          "url": "https://www.nyxora.ro"
         }
       } : {
         "@type": "Offer",
         "availability": "https://schema.org/InStock",
-        "url": `https://nyxora.ro/products/${product.slug}`,
+        "url": `https://www.nyxora.ro/products/${product.slug}`,
         "seller": {
           "@type": "Organization",
           "name": "Nyxora",
-          "url": "https://nyxora.ro"
+          "url": "https://www.nyxora.ro"
         }
       },
       "aggregateRating": offersList.length > 0 ? {
