@@ -77,7 +77,8 @@ export async function generateMetadata({ params }) {
         canonical
       },
       openGraph: {
-        type: 'product',
+        // Next.js 15 metadata openGraph.type does not support 'product'. Use 'website' and rely on JSON-LD for product semantics.
+        type: 'website',
         siteName: 'Nyxora',
         title: prod.name,
         description,

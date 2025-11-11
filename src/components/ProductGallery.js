@@ -1,12 +1,22 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from './SmartImage'
 
 export default function ProductGallery({ images = [], alt }) {
-  const imgs = images && images.length > 0 ? images : ['']
-  const [index, setIndex] = useState(0)
-  const [lightbox, setLightbox] = useState(false)
+  // Sanitize incoming images: keep only non-empty strings
+  const imgs = useMemo(() => {
+    const arr = Array.isArray(images) ? images.filter(i => typeof i === 'string' && i.trim()) : [];
+    return arr.length ? arr : ['/placeholder-product.svg'];
+  }, [images]);
+
+  const [index, setIndex] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+
+  // Ensure index stays in bounds when images array changes
+  useEffect(() => {
+    if (index >= imgs.length) setIndex(0);
+  }, [imgs, index]);
 
   const prev = (e) => { e?.stopPropagation(); setIndex((i) => (i - 1 + imgs.length) % imgs.length) }
   const next = (e) => { e?.stopPropagation(); setIndex((i) => (i + 1) % imgs.length) }
@@ -21,7 +31,13 @@ export default function ProductGallery({ images = [], alt }) {
         role="button"
       >
         <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-105">
-          <Image src={imgs[index]} alt={alt || 'Product image'} fill style={{ objectFit: 'contain' }} />
+          <Image 
+            src={imgs[index]} 
+            alt={alt || 'Product image'} 
+            fill 
+            sizes="(min-width: 1280px) 900px, (min-width: 768px) 80vw, 100vw" 
+            style={{ objectFit: 'contain' }} 
+          />
         </div>
         {/* Decorative subtle glow on hover */}
         <div className="pointer-events-none absolute -inset-10 opacity-0 group-hover:opacity-20 blur-3xl transition duration-500 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.4),transparent_60%)]" />
@@ -39,7 +55,13 @@ export default function ProductGallery({ images = [], alt }) {
               aria-label={`Imagine ${i+1}`}
             >
               <div className="w-full h-full relative">
-                <Image src={src} alt={`${alt || 'thumb'} ${i+1}`} fill style={{ objectFit: 'cover' }} />
+                <Image 
+                  src={src} 
+                  alt={`${alt || 'thumb'} ${i+1}`} 
+                  fill 
+                  sizes="64px" 
+                  style={{ objectFit: 'cover' }} 
+                />
               </div>
             </button>
           ))}
@@ -55,7 +77,14 @@ export default function ProductGallery({ images = [], alt }) {
           aria-modal="true"
         >
           <div className="relative w-[92vw] h-[80vh] max-w-6xl">
-            <Image src={imgs[index]} alt={alt || 'Product image large'} fill style={{ objectFit: 'contain' }} />
+            <Image 
+              src={imgs[index]} 
+              alt={alt || 'Product image large'} 
+              fill 
+              sizes="(min-width: 1280px) 1100px, 100vw" 
+              style={{ objectFit: 'contain' }} 
+              priority 
+            />
 
             {imgs.length > 1 && (
               <>
